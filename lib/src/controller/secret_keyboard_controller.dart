@@ -7,7 +7,7 @@ import 'package:flutter_secret_keyboard/src/utils/constants.dart';
 /// Contrôleur qui gère l'état et la logique du clavier secret
 class SecretKeyboardController with ChangeNotifier {
   /// Fonction d'authentification actuelle
-  AuthenticationFunction _authenticationFunction;
+  final AuthenticationFunction _authenticationFunction;
 
   /// Permet de vérifier si l'empreinte digitale est activée
   final bool _fingerprintEnabled;
