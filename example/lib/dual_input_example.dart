@@ -41,7 +41,7 @@ class _DualInputExampleState extends State<DualInputExample> {
     if (!_isSyncing && _focusNode.hasFocus) {
       setState(() {
         _isSyncing = true;
-        _binding.syncFromTextField();
+        //_binding.syncFromTextField();
         _isSyncing = false;
       });
     }

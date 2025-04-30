@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
 import 'package:flutter_secret_keyboard/src/utils/constants.dart';
 
@@ -70,6 +71,9 @@ class SecretKeyboard extends StatefulWidget {
   /// Caractère à utiliser pour masquer le texte
   final String obscuringCharacter;
 
+  /// Liste de formateurs d'entrée pour le TextField lié
+  final List<TextInputFormatter>? inputFormatters;
+
   /// Constructeur avec paramètres personnalisables
   const SecretKeyboard({
     super.key,
@@ -94,6 +98,7 @@ class SecretKeyboard extends StatefulWidget {
     this.textController,
     this.obscureText = true,
     this.obscuringCharacter = '•',
+    this.inputFormatters,
   });
 
   @override
@@ -117,6 +122,7 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
         textEditingController: widget.textController!,
         obscureText: widget.obscureText,
         obscuringCharacter: widget.obscuringCharacter,
+        inputFormatters: widget.inputFormatters,
       );
     }
   }
@@ -129,7 +135,8 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
     // Gérer les changements de contrôleur de texte
     if (widget.textController != oldWidget.textController ||
         widget.obscureText != oldWidget.obscureText ||
-        widget.obscuringCharacter != oldWidget.obscuringCharacter) {
+        widget.obscuringCharacter != oldWidget.obscuringCharacter ||
+        widget.inputFormatters != oldWidget.inputFormatters) {
       // Disposer de l'ancienne liaison
       _textFieldBinding?.dispose();
 
@@ -140,6 +147,7 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
           textEditingController: widget.textController!,
           obscureText: widget.obscureText,
           obscuringCharacter: widget.obscuringCharacter,
+          inputFormatters: widget.inputFormatters,
         );
       } else {
         _textFieldBinding = null;

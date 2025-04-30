@@ -1,6 +1,8 @@
 // Fichier: example/lib/main.dart
 
+import 'package:example/dual_input_example.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
 
 void main() {
@@ -32,31 +34,18 @@ class SecretKeyboardDemo extends StatefulWidget {
 }
 
 class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
-  late SecretKeyboardController _controller;
-  final TextEditingController _textControllerMasked = TextEditingController();
-  final TextEditingController _textControllerVisible = TextEditingController();
-  String _message = '';
-  bool _randomizeKeys = true;
+  final TextEditingController _pinController = TextEditingController();
+  final SecretKeyboardController _pinKeyboardController = SecretKeyboardController();
 
-  @override
-  void initState() {
-    super.initState();
-    _initController();
-  }
-
-  void _initController() {
-    _controller = SecretKeyboardController(
-      fingerprintEnabled: true,
-      maxLength: 4,
-      randomizeKeys: _randomizeKeys,
-    );
-  }
+  final TextEditingController _formatController = TextEditingController();
+  final SecretKeyboardController _formatKeyboardController = SecretKeyboardController();
 
   @override
   void dispose() {
-    _controller.dispose();
-    _textControllerMasked.dispose();
-    _textControllerVisible.dispose();
+    _pinController.dispose();
+    _pinKeyboardController.dispose();
+    _formatController.dispose();
+    _formatKeyboardController.dispose();
     super.dispose();
   }
 
@@ -64,141 +53,103 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Démo du Clavier Secret'),
+        title: const Text('SecretKeyboard avec inputFormatters'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Ajouter deux exemples de TextField, un masqué et un normal
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text("Code masqué", style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 5),
-                      TextField(
-                        controller: _textControllerMasked,
-                        readOnly: true,
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Version masquée',
-                        ),
-                        style: const TextStyle(fontSize: 24, letterSpacing: 8),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text("Code visible", style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 5),
-                      TextField(
-                        controller: _textControllerVisible,
-                        readOnly: true,
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Version visible',
-                        ),
-                        style: const TextStyle(fontSize: 24, letterSpacing: 8),
-                      ),
-                    ],
-                  ),
-                ),
+            // TextField pour afficher le code PIN
+            TextField(
+              controller: _pinController,
+              decoration: const InputDecoration(
+                labelText: 'Code PIN (limité à 4 chiffres)',
+                border: OutlineInputBorder(),
+              ),
+              readOnly: true, // Lecture seule, modifié par le clavier
+              obscureText: true,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Clavier secret avec limite de 4 chiffres
+            SecretKeyboard(
+              controller: _pinKeyboardController,
+              onClick: (value) {
+                // Action sur clic (optionnel)
+              },
+              onCodeCompleted: (code) {
+                // Action lorsque le code est complet
+                print('Code PIN complété: $code');
+              },
+              textController: _pinController,
+              codeLength: 4,
+              inputFormatters: [
+                // Limite la longueur à 4 caractères
+                LengthLimitingTextInputFormatter(4),
+                // Accepte uniquement les chiffres
+                FilteringTextInputFormatter.digitsOnly,
               ],
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 32),
 
-            Text(
-              _message,
-              style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold
+            // TextField pour afficher le code formaté
+            TextField(
+              controller: _formatController,
+              decoration: const InputDecoration(
+                labelText: 'Code de référence (format XX-XXXX)',
+                border: OutlineInputBorder(),
               ),
+              readOnly: true, // Lecture seule, modifié par le clavier
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Option pour mélanger les touches
-            SwitchListTile(
-              title: const Text('Mélanger les touches'),
-              subtitle: const Text('Active/désactive la disposition aléatoire des chiffres'),
-              value: _randomizeKeys,
-              onChanged: (value) {
-                setState(() {
-                  _randomizeKeys = value;
-                  // Recréer le contrôleur avec la nouvelle option
-                  _controller.dispose();
-                  _initController();
-                });
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            // Clavier secret avec liaison aux deux TextFields
+            // Clavier secret avec formatter personnalisé
             SecretKeyboard(
-              controller: _controller,
-              codeLength: 4,
-              textController: _textControllerMasked, // Liaison avec le TextField masqué
-              obscureText: true, // Masquer le texte pour ce TextField
-              onClick: (code) {
-                setState(() {
-                  // Mettre à jour manuellement le TextField visible
-                  _textControllerVisible.text = code;
-                });
+              controller: _formatKeyboardController,
+              onClick: (value) {
+                // Action sur clic (optionnel)
               },
-              onCodeCompleted: (code) {
-                setState(() {
-                  _message = 'Code complet: $code';
-                });
-              },
-              onFingerprintClick: (_) {
-                setState(() {
-                  _message = 'Authentification par empreinte digitale demandée';
-                });
-              },
-              deleteButtonWidget: const Icon(
-                Icons.backspace_outlined,
-                color: Colors.red,
-                size: 30,
-              ),
-              fingerprintButtonWidget: const Icon(
-                Icons.fingerprint,
-                color: Colors.blue,
-                size: 30,
-              ),
-              backgroundColor: Colors.grey[200],
-              indicatorActiveColor: Colors.blue,
-              cellStyle: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () {
-                _controller.resetSecretCode();
-                setState(() {
-                  _message = '';
-                });
-              },
-              child: const Text('Réinitialiser'),
+              textController: _formatController,
+              codeLength: 7, // 7 caractères incluant le tiret
+              inputFormatters: [
+                // Formate automatiquement l'entrée selon le modèle XX-XXXX
+                _ReferenceCodeFormatter(),
+              ],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Formatter personnalisé pour formater le texte selon le modèle XX-XXXX
+class _ReferenceCodeFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue
+      ) {
+    // Supprime tous les caractères non numériques
+    String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Limite à 6 chiffres maximum
+    if (newText.length > 6) {
+      newText = newText.substring(0, 6);
+    }
+
+    // Formate selon le modèle XX-XXXX
+    if (newText.length > 2) {
+      newText = '${newText.substring(0, 2)}-${newText.substring(2)}';
+    }
+
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
     );
   }
 }
