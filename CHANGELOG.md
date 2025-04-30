@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 1.0.1 (1 mai 2025)
+
+### Ajouts
+
+- Support pour les `inputFormatters` sur le TextField lié au clavier secret
+- Possibilité d'appliquer des contraintes de formatage au texte saisi
+- Prise en charge de formatters personnalisés pour des formats spécifiques (XX-XXXX, etc.)
+- Support complet de l'API standard de Flutter `TextInputFormatter`
+
+### Améliorations
+
+- Traitement optimisé des entrées dans la liaison TextField
+- Meilleure gestion de la position du curseur après l'application des formatters
+- Compatibilité avec les formatters standard de Flutter (`LengthLimitingTextInputFormatter`, `FilteringTextInputFormatter`, etc.)
+
 ## 1.0.0 (30 avril 2025)
 
 ### Ajouts

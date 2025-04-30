@@ -7,6 +7,7 @@ Une bibliothèque Flutter pour implémenter un clavier de saisie de code secret 
 - Clavier numérique avec disposition aléatoire des touches pour une sécurité accrue
 - Option pour activer ou désactiver le mélange aléatoire des touches
 - Liaison avec un TextField pour afficher le code saisi
+- Support pour les inputFormatters permettant de formater le texte saisi
 - Support pour l'authentification par empreinte digitale
 - Indicateurs visuels de saisie du code
 - Hautement personnalisable (couleurs, styles, icônes)
@@ -19,7 +20,7 @@ Ajoutez `flutter_secret_keyboard` à votre fichier pubspec.yaml :
 
 ```yaml
 dependencies:
-  flutter_secret_keyboard: ^1.0.0
+  flutter_secret_keyboard: ^1.0.1
 ```
 
 ## Utilisation
@@ -28,6 +29,7 @@ Voici un exemple simple d'utilisation de la bibliothèque :
 
 ```dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
 
 class SecretKeyboardDemo extends StatefulWidget {
@@ -88,6 +90,10 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
             codeLength: 4,
             textController: _textController,  // Liaison avec le TextField
             obscureText: true,               // Masquer le texte
+            inputFormatters: [              // Ajout de formatters
+              LengthLimitingTextInputFormatter(4),   // Limite à 4 caractères
+              FilteringTextInputFormatter.digitsOnly, // Uniquement des chiffres
+            ],
             onClick: (code) {
               setState(() {
                 _enteredCode = code;
@@ -159,6 +165,58 @@ readOnly: true,      // Recommandé pour empêcher l'édition directe
 )
 ```
 
+### Formatage du texte avec inputFormatters
+
+```dart
+// Utilisation des formatters standard de Flutter
+SecretKeyboard(
+  controller: keyboardController,
+  textController: textController,
+  inputFormatters: [
+    LengthLimitingTextInputFormatter(4),    // Limite la longueur à 4 caractères
+    FilteringTextInputFormatter.digitsOnly, // Accepte uniquement les chiffres
+  ],
+  // ...
+)
+
+// Formatter personnalisé pour un format spécifique (XX-XXXX)
+class ReferenceCodeFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue, 
+    TextEditingValue newValue
+  ) {
+    // Supprime tous les caractères non numériques
+    String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    // Limite à 6 chiffres maximum
+    if (newText.length > 6) {
+      newText = newText.substring(0, 6);
+    }
+    
+    // Formate selon le modèle XX-XXXX
+    if (newText.length > 2) {
+      newText = '${newText.substring(0, 2)}-${newText.substring(2)}';
+    }
+    
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
+  }
+}
+
+// Utilisation du formatter personnalisé
+SecretKeyboard(
+  controller: keyboardController,
+  textController: textController,
+  inputFormatters: [
+    ReferenceCodeFormatter(),  // Formatter personnalisé
+  ],
+  // ...
+)
+```
+
 ### Couleurs des indicateurs
 
 ```dart
@@ -208,7 +266,7 @@ SecretKeyboardController({
   AuthenticationFunction authenticationFunction = AuthenticationFunction.transactionValidation,
   bool fingerprintEnabled = false,
   int maxLength = 4,
-  bool randomizeKeys = true,  // Nouvelle option pour le mélange des touches
+  bool randomizeKeys = true,  // Option pour le mélange des touches
 })
 ```
 
@@ -236,10 +294,12 @@ SecretKeyboard({
   Color indicatorActiveColor = Colors.orange,
   Color indicatorInactiveColor = Colors.black,
   Color indicatorBackgroundColor = Colors.white,
-  // Nouveaux paramètres pour la liaison avec TextField
+  // Paramètres pour la liaison avec TextField
   TextEditingController? textController,
   bool obscureText = true,
   String obscuringCharacter = '•',
+  // Nouveau paramètre pour le formatage du texte
+  List<TextInputFormatter>? inputFormatters,
 })
 ```
 
@@ -249,10 +309,12 @@ Classe utilitaire pour lier un clavier secret à un TextField.
 
 ```dart
 SecretKeyboardTextFieldBinding({
-  required SecretKeyboardController keyboardController,
-  required TextEditingController textEditingController,
-  bool obscureText = true,
-  String obscuringCharacter = '•',
+required SecretKeyboardController keyboardController,
+required TextEditingController textEditingController,
+bool obscureText = true,
+String obscuringCharacter = '•',
+// Nouveau paramètre pour le formatage du texte
+List<TextInputFormatter>? inputFormatters,
 })
 ```
 
