@@ -1,0 +1,19 @@
+name: flutter_secret_keyboard
+description: "Une bibliothèque Flutter pour implémenter un clavier de saisie de code secret sécurisé avec disposition aléatoire des touches."
+version: 1.0.0
+homepage: https://github.com/inossan-dev/flutter_secret_keyboard.git
+
+environment:
+  sdk: ^3.7.2
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
