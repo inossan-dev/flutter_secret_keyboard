@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
-import 'package:flutter_secret_keyboard/src/utils/constants.dart';
 
 /// Contrôleur qui gère l'état et la logique du clavier secret
 class SecretKeyboardController with ChangeNotifier {

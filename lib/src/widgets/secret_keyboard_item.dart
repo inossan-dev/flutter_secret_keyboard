@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
-import 'package:flutter_secret_keyboard/src/utils/constants.dart';
 
 /// Widget représentant une touche du clavier secret
 class SecretKeyboardItem extends StatelessWidget {
@@ -61,18 +60,18 @@ class SecretKeyboardItem extends StatelessWidget {
     }
     // Touche d'empreinte digitale
     else if (secretKeyboardData.key == SecretKeyboardConstants.FINGERPRINT_KEY) {
-      return fingerprintButtonWidget ?? const Icon(
+      return fingerprintButtonWidget ?? Icon(
         Icons.fingerprint,
         size: 30,
-        color: Colors.black,
+        color: cellStyle?.color ?? Colors.black,
       );
     }
     // Touche de suppression
     else if (secretKeyboardData.key == SecretKeyboardConstants.DELETE_KEY) {
-      return deleteButtonWidget ?? const Icon(
+      return deleteButtonWidget ?? Icon(
         Icons.backspace,
         size: 30,
-        color: Colors.black,
+        color: cellStyle?.color ?? Colors.black,
       );
     }
     // Espace vide

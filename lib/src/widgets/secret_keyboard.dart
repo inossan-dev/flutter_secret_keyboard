@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
-import 'package:flutter_secret_keyboard/src/utils/constants.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/border_animation_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/color_change_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/elevation_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/scale_button_effect.dart';
 
-import 'secret_code_item.dart';
 import 'secret_keyboard_item.dart';
 
 /// Widget principal du clavier secret
@@ -77,33 +79,66 @@ class SecretKeyboard extends StatefulWidget {
   /// Nombre de colonnes dans la grille du clavier (3 ou 4)
   final int gridColumns;
 
+  /// Type d'effet tactile pour les touches
+  final KeyTouchEffect touchEffect;
+
+  /// Couleur de l'effet tactile (pour les effets qui utilisent une couleur)
+  final Color? touchEffectColor;
+
+  /// Durée de l'animation de l'effet tactile
+  final Duration touchEffectDuration;
+
+  /// Echelle de l'animation de l'effet tactile
+  final double touchEffectScaleValue;
+
+  /// Thème prédéfini (remplace les paramètres individuels si spécifié)
+  final SecretKeyboardTheme? theme;
+
+  /// Afficher une bordure externe lorsque showGrid est true et qu'aucun thème n'est défini
+  final bool showOuterBorder;
+
   /// Constructeur avec paramètres personnalisables
-  const SecretKeyboard({
+  SecretKeyboard({
     super.key,
     required this.controller,
     required this.onClick,
     this.showSecretCode = true,
     this.showGrid = true,
+    this.showOuterBorder = false,
     this.cellAspectRatio = 1,
     this.onCodeCompleted,
     this.onFingerprintClick,
     this.onCanCleanMessage,
     this.height,
     this.width,
-    this.backgroundColor,
-    this.cellStyle,
+    backgroundColor,
+    cellStyle,
     this.codeLength = 4,
     this.deleteButtonWidget,
     this.fingerprintButtonWidget,
-    this.indicatorActiveColor = Colors.orange,
-    this.indicatorInactiveColor = Colors.black,
+    indicatorActiveColor = Colors.orange,
+    indicatorInactiveColor = Colors.black,
     this.indicatorBackgroundColor = Colors.white,
     this.textController,
     this.obscureText = true,
     this.obscuringCharacter = '•',
     this.inputFormatters,
     this.gridColumns = 4,
-  }) : assert(gridColumns == 3 || gridColumns == 4, 'Le nombre de colonnes doit être 3 ou 4');
+    this.theme,
+    touchEffect = KeyTouchEffect.none,
+    touchEffectColor,
+    this.touchEffectScaleValue = 0.95,
+    touchEffectDuration = const Duration(milliseconds: 150),
+  })  : touchEffect = theme?.touchEffect ?? touchEffect,
+        touchEffectColor = theme?.primaryColor ?? touchEffectColor,
+        touchEffectDuration = theme?.animationDuration ?? touchEffectDuration,
+        backgroundColor = theme?.backgroundColor ?? backgroundColor,
+        indicatorActiveColor = theme?.primaryColor ?? indicatorActiveColor,
+        indicatorInactiveColor =
+            theme?.secondaryColor ?? indicatorInactiveColor ?? Colors.black,
+        cellStyle = theme?.textStyle ?? cellStyle,
+        assert(gridColumns == 3 || gridColumns == 4,
+            'Le nombre de colonnes doit être 3 ou 4');
 
   @override
   State<SecretKeyboard> createState() => _SecretKeyboardState();
@@ -201,7 +236,8 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
         _isCompleted = true;
         widget.onCodeCompleted!(newCode);
       } else if (keyValue == SecretKeyboardConstants.DELETE_KEY) {
-        _isCompleted = false; // Réinitialiser l'état complété lors d'une suppression
+        _isCompleted =
+            false; // Réinitialiser l'état complété lors d'une suppression
       }
 
       if (widget.onFingerprintClick != null &&
@@ -217,39 +253,54 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
 
   /// Créer une décoration de bordure pour la grille
   BoxDecoration _createBoxDecoration(int index) {
-    index++;
+    // Cas 1: Aucun thème n'est défini - afficher les bordures par défaut
+    if (widget.theme == null && widget.showGrid) {
+      final bool isLastRow = index >= widget.controller.secretKeyboardData.length - _gridViewCrossAxisCount;
+      final bool isLastColumn = (index + 1) % _gridViewCrossAxisCount == 0;
 
-    // Adaptation en fonction du nombre de colonnes
-    if (_gridViewCrossAxisCount == 3) {
       return BoxDecoration(
+        color: widget.backgroundColor,
         border: Border(
-          left: BorderSide(
-            color: ((index % 3 != 1) ? Colors.black : Colors.transparent),
-            width: 0.8,
+          right: isLastColumn ? BorderSide.none : BorderSide(
+            color: Colors.grey.withValues(alpha: 0.5),
+            width: 1.0,
+            style: BorderStyle.solid,
           ),
-          top: BorderSide(
-            color: index > _gridViewCrossAxisCount ? Colors.black : Colors.transparent,
-            width: 0.8,
+          bottom: isLastRow ? BorderSide.none : BorderSide(
+            color: Colors.grey.withValues(alpha: 0.5),
+            width: 1.0,
+            style: BorderStyle.solid,
           ),
         ),
       );
-    } else {
-      // Configuration originale pour 4 colonnes
+    }
+    // Cas 2: Un thème est défini avec showBorders = true
+    else if (widget.theme != null && widget.theme!.showBorders && widget.showGrid) {
+      final bool isLastRow = index >= widget.controller.secretKeyboardData.length - _gridViewCrossAxisCount;
+      final bool isLastColumn = (index + 1) % _gridViewCrossAxisCount == 0;
+      final borderColor = widget.theme!.borderColor ?? widget.theme!.primaryColor.withValues(alpha: 0.3);
+
       return BoxDecoration(
+        color: widget.backgroundColor,
         border: Border(
-          left: BorderSide(
-            color: ((index >= 2 && index <= 4) ||
-                (index >= 6 && index <= 8) ||
-                (index >= 10 && index <= 12))
-                ? Colors.black
-                : Colors.transparent,
-            width: 0.8,
+          right: isLastColumn ? BorderSide.none : BorderSide(
+            color: borderColor,
+            width: 1.0,
+            style: BorderStyle.solid,
           ),
-          top: BorderSide(
-            color: index > _gridViewCrossAxisCount ? Colors.black : Colors.transparent,
-            width: 0.8,
+          bottom: isLastRow ? BorderSide.none : BorderSide(
+            color: borderColor,
+            width: 1.0,
+            style: BorderStyle.solid,
           ),
         ),
+      );
+    }
+    // Cas 3: Un thème est défini avec showBorders = false (ou showGrid = false)
+    else {
+      return BoxDecoration(
+        color: widget.backgroundColor,
+        borderRadius: BorderRadius.circular(12),
       );
     }
   }
@@ -257,94 +308,153 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-        listenable: widget.controller,
-        builder: (context, _) {
-          return SizedBox(
-            height: widget.height,
-            width: widget.width,
-            child: Column(
-              children: [
-                // Afficher les indicateurs du code secret
-                if (widget.showSecretCode)
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 4.5,
-                    ),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: (widget.controller.secretCodeDatas.isNotEmpty)
-                          ? GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        scrollDirection: Axis.vertical,
-                        gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisSpacing: 1,
-                          mainAxisSpacing: 1,
-                          crossAxisCount: widget.controller.secretCodeDatas.length,
-                        ),
-                        itemCount: widget.controller.secretCodeDatas.length,
-                        itemBuilder: (context, index) {
-                          var scd = widget.controller.secretCodeDatas[index];
-                          return SecretCodeItem(
-                            secretCodeData: scd,
-                            activeColor: widget.indicatorActiveColor,
-                            inactiveColor: widget.indicatorInactiveColor,
-                            backgroundColor: widget.indicatorBackgroundColor,
-                          );
-                        },
-                      )
-                          : Container(),
-                    ),
-                  ),
+      listenable: widget.controller,
+      builder: (context, _) {
+        return SizedBox(
+          height: widget.height,
+          width: widget.width,
+          child: Column(
+            children: [
+              // Afficher les indicateurs du code secret
+              if (widget.showSecretCode)
+                SecretCodeIndicator(
+                  controller: widget.controller,
+                  activeColor: widget.indicatorActiveColor,
+                  inactiveColor: widget.indicatorInactiveColor,
+                  backgroundColor: widget.indicatorBackgroundColor,
+                ),
 
-                // Séparateur
-                if (widget.showSecretCode)
-                  const SizedBox(height: 10),
+              // Séparateur
+              if (widget.showSecretCode) const SizedBox(height: 10),
 
-                // Clavier
-                Padding(
-                  padding: const EdgeInsets.all(10),
+              // Clavier
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Container(
+                  decoration:
+                  // Cas 1: Thème défini avec bordure externe activée
+                  (widget.theme?.showBorders == true && widget.theme?.showOuterBorder == true)
+                      // Cas 2: Pas de thème, mais showGrid et showOuterBorder sont tous deux true
+                      || (widget.theme == null && widget.showGrid && widget.showOuterBorder)
+                      ? BoxDecoration(
+                    border: Border.all(
+                      color: widget.theme?.borderColor ?? Colors.grey.withValues(alpha: 0.5),
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(4.0),
+                  )
+                      : null,
                   child: GridView.builder(
                     padding: EdgeInsets.zero,
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     scrollDirection: Axis.vertical,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
+                      crossAxisSpacing: (widget.theme == null || widget.theme!.showBorders) ? 0 : 8,
+                      mainAxisSpacing: (widget.theme == null || widget.theme!.showBorders) ? 0 : 8,
                       crossAxisCount: _gridViewCrossAxisCount,
                       childAspectRatio: widget.cellAspectRatio,
                     ),
                     itemCount: widget.controller.secretKeyboardData.length,
                     itemBuilder: (context, index) {
                       var skd = widget.controller.secretKeyboardData[index];
-                      return InkWell(
-                        onTap: () {
-                          String keyValue = widget.controller.secretKeyboardData[index].key;
-                          handleKeyPress(keyValue);
-                        },
-                        child: Container(
-                          color: widget.showGrid ? null : Colors.transparent,
-                          decoration: widget.showGrid
-                              ? _createBoxDecoration(index)
-                              : null,
-                          child: SecretKeyboardItem(
-                            secretKeyboardData: skd,
-                            cellStyle: widget.cellStyle,
-                            backgroundColor: widget.backgroundColor,
-                            deleteButtonWidget: widget.deleteButtonWidget,
-                            fingerprintButtonWidget: widget.fingerprintButtonWidget,
-                          ),
+
+                      // Base container that will be wrapped with the effect
+                      final keyContainer = Container(
+                        color: widget.showGrid ? null : Colors.transparent,
+                        decoration: widget.showGrid ? _createBoxDecoration(index) : null,
+                        child: SecretKeyboardItem(
+                          secretKeyboardData: skd,
+                          cellStyle: widget.cellStyle,
+                          backgroundColor:
+                              widget.touchEffect != KeyTouchEffect.none &&
+                                      widget.touchEffect != KeyTouchEffect.ripple
+                                  ? Colors.transparent
+                                  : widget.backgroundColor,
+                          deleteButtonWidget: widget.deleteButtonWidget,
+                          fingerprintButtonWidget: widget.fingerprintButtonWidget,
                         ),
                       );
+
+                      // Function to call when key is tapped
+                      onTap() {
+                        String keyValue =
+                            widget.controller.secretKeyboardData[index].key;
+                        handleKeyPress(keyValue);
+                      }
+
+                      // Apply the selected effect
+                      switch (widget.touchEffect) {
+                        case KeyTouchEffect.none:
+                          return GestureDetector(
+                            onTap: onTap,
+                            child: keyContainer,
+                          );
+
+                        case KeyTouchEffect.ripple:
+                          return InkWell(
+                            onTap: onTap,
+                            splashColor:
+                                widget.touchEffectColor?.withValues(alpha: 0.3) ??
+                                    widget.indicatorActiveColor
+                                        .withValues(alpha: 0.3),
+                            highlightColor:
+                                widget.touchEffectColor?.withValues(alpha: 0.1) ??
+                                    widget.indicatorActiveColor
+                                        .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            child: keyContainer,
+                          );
+
+                        case KeyTouchEffect.scale:
+                          return ScaleButtonEffect(
+                            onTap: onTap,
+                            duration: widget.touchEffectDuration,
+                            scaleValue: widget.touchEffectScaleValue,
+                            child: keyContainer,
+                          );
+
+                        case KeyTouchEffect.color:
+                          return ColorChangeEffect(
+                            onTap: onTap,
+                            normalColor: widget.backgroundColor,
+                            pressedColor:
+                                widget.touchEffectColor?.withValues(alpha: 0.3) ??
+                                    Colors.grey.shade300,
+                            duration: widget.touchEffectDuration,
+                            child: keyContainer,
+                          );
+
+                        case KeyTouchEffect.elevation:
+                          return Padding(
+                            padding: const EdgeInsets.all(2.0),
+                            child: ElevationEffect(
+                              onTap: onTap,
+                              backgroundColor:
+                                  widget.backgroundColor ?? Colors.white,
+                              duration: widget.touchEffectDuration,
+                              child: keyContainer,
+                            ),
+                          );
+
+                        case KeyTouchEffect.border:
+                          return BorderAnimationEffect(
+                            onTap: onTap,
+                            backgroundColor: widget.backgroundColor,
+                            borderColor: widget.touchEffectColor ??
+                                widget.indicatorActiveColor,
+                            duration: widget.touchEffectDuration,
+                            child: keyContainer,
+                          );
+                      }
                     },
                   ),
                 ),
-              ],
-            ),
-          );
-        }
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -27,3 +27,24 @@ enum AuthenticationFunction {
   /// Authentification personnalisée
   custom
 }
+
+/// Type d'effet tactile pour les touches du clavier
+enum KeyTouchEffect {
+  /// Aucun effet (comportement par défaut)
+  none,
+
+  /// Effet de vague (ripple) de Material Design
+  ripple,
+
+  /// Effet d'échelle (la touche devient légèrement plus petite)
+  scale,
+
+  /// Effet de changement de couleur
+  color,
+
+  /// Effet d'élévation/ombre
+  elevation,
+
+  /// Effet d'animation de bordure
+  border
+}

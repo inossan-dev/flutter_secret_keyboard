@@ -1,14 +1,48 @@
 # CHANGELOG
 
+## 1.3.0 (01 mai 2025)
+
+### Ajouts
+
+- Effets tactiles pour les touches du clavier :
+    - Effet d'ondulation (ripple) Material Design
+    - Effet d'échelle (réduction de taille à l'appui)
+    - Effet de changement de couleur
+    - Effet d'élévation/ombre 3D
+    - Effet d'animation de bordure
+- Système de thèmes prédéfinis :
+    - Material Design (ondulation)
+    - Material Design avec bordures
+    - Neumorphique (élévation subtile)
+    - iOS (minimaliste avec échelle)
+    - iOS avec bordures
+    - Sombre (pour interfaces dark mode)
+    - Sombre avec bordures
+    - Bancaire (professionnel et sécurisé)
+    - Avec bordures internes seulement (gridLines)
+    - Avec bordures internes et externes (fullGrid)
+- Options de personnalisation des bordures (showBorders, showOuterBorder, borderColor)
+- Styles de texte personnalisés pour chaque thème
+- Paramètre `touchEffectScaleValue` pour contrôler l'amplitude de l'effet d'échelle
+
+### Améliorations
+
+- Adaptation des icônes de suppression et d'empreinte digitale aux couleurs du thème
+- Refactorisation du widget SecretCodeIndicator pour une meilleure intégration avec les thèmes
+- Optimisation des transitions d'animation pour des effets plus fluides
+- Meilleure gestion des bordures pour les différentes configurations de grille
+
 ## 1.2.0 (01 mai 2025)
 
 ### Ajouts
 
 - Configuration du nombre de colonnes du clavier (3 ou 4) pour s'adapter à différentes mises en page
+- Paramètre `gridColumns` dans le contrôleur et le widget pour spécifier le nombre de colonnes
 
 ### Améliorations
 
 - Adaptation intelligente du clavier en fonction du nombre de colonnes sélectionné
+- Disposition optimisée des touches numériques selon le mode 3 ou 4 colonnes
 
 ## 1.1.0 (30 avril 2025)
 
@@ -61,7 +95,7 @@
 - Utilisation du système standard de gestion d'état de Flutter avec `ChangeNotifier`
 - Compatibilité avec Flutter 2.x et 3.x via une implémentation personnalisée de `ListenableBuilder`
 - Support pour la synchronisation bidirectionnelle entre le clavier secret et un TextField standard
-- Filtrage automatique des entrées non numériques dans la méthode `syncFromTextField`
+- Filtrage automatique des entrées non numériques
 
 ### Corrections
 
@@ -75,5 +109,3 @@
 - Guide détaillé pour la personnalisation du clavier
 - Instructions pour l'intégration dans les applications existantes
 - Exemples de cas d'utilisation avancés (double saisie, pré-remplissage)
-
-Cette première version établit les fondations d'une bibliothèque flexible et sécurisée pour la saisie de codes secrets dans les applications Flutter, tout en offrant une expérience utilisateur personnalisable et intuitive.

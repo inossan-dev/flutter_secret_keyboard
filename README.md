@@ -5,6 +5,8 @@ Une bibliothèque Flutter pour implémenter un clavier de saisie de code secret 
 ## Caractéristiques
 
 - Clavier numérique avec disposition aléatoire des touches pour une sécurité accrue
+- **Effets tactiles interactifs** (ripple, échelle, couleur, élévation, bordure)
+- **Système de thèmes prédéfinis** (Material, Neumorphique, iOS, Sombre, Bancaire)
 - Configuration flexible avec support pour 3 ou 4 colonnes
 - Option pour activer ou désactiver le mélange aléatoire des touches
 - Liaison avec un TextField pour afficher le code saisi
@@ -21,7 +23,7 @@ Ajoutez `flutter_secret_keyboard` à votre fichier pubspec.yaml :
 
 ```yaml
 dependencies:
-  flutter_secret_keyboard: ^1.0.2
+  flutter_secret_keyboard: ^1.3.0
 ```
 
 ### Configuration requise
@@ -134,6 +136,209 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
 }
 ```
 
+## Nouveautés de la version 1.3.0
+
+### Effets tactiles
+
+Le clavier secret propose désormais cinq types d'effets tactiles pour améliorer l'expérience utilisateur :
+
+```dart
+// Utilisation d'un effet tactile
+SecretKeyboard(
+  controller: _controller,
+  touchEffect: KeyTouchEffect.scale,  // Effet d'échelle
+  touchEffectColor: Colors.blue,      // Couleur de l'effet (si applicable)
+  touchEffectDuration: const Duration(milliseconds: 120), // Durée de l'animation
+  touchEffectScaleValue: 0.92,        // Valeur d'échelle pour l'effet scale
+  // ...
+)
+```
+
+Types d'effets disponibles :
+- `KeyTouchEffect.none` - Aucun effet
+- `KeyTouchEffect.ripple` - Effet d'ondulation Material Design
+- `KeyTouchEffect.scale` - Animation de réduction d'échelle
+- `KeyTouchEffect.color` - Changement de couleur
+- `KeyTouchEffect.elevation` - Effet d'élévation/ombre
+- `KeyTouchEffect.border` - Animation de bordure
+
+### Système de thèmes prédéfinis
+
+```dart
+// Utilisation d'un thème prédéfini
+SecretKeyboard(
+  controller: _controller,
+  theme: SecretKeyboardTheme.banking, // Thème bancaire prédéfini
+  // Les autres propriétés de style seront ignorées
+  // car elles sont définies par le thème
+)
+```
+
+Thèmes disponibles :
+- `SecretKeyboardTheme.material` - Style Material Design moderne
+- `SecretKeyboardTheme.materialWithBorders` - Material Design avec bordures
+- `SecretKeyboardTheme.neumorphic` - Effet d'élévation subtil
+- `SecretKeyboardTheme.iOS` - Style minimaliste inspiré d'iOS
+- `SecretKeyboardTheme.iOSWithBorders` - Style iOS avec bordures
+- `SecretKeyboardTheme.dark` - Thème sombre pour interfaces dark mode
+- `SecretKeyboardTheme.darkWithBorders` - Thème sombre avec bordures
+- `SecretKeyboardTheme.banking` - Style professionnel et sécurisé
+- `SecretKeyboardTheme.gridLines` - Avec bordures internes seulement
+- `SecretKeyboardTheme.fullGrid` - Avec bordures internes et externes
+
+### Création d'un thème personnalisé
+
+```dart
+// Création d'un thème personnalisé
+final monTheme = SecretKeyboardTheme(
+  touchEffect: KeyTouchEffect.elevation,
+  primaryColor: Colors.purple,
+  secondaryColor: Colors.purple[200],
+  backgroundColor: Colors.grey[100]!,
+  textColor: Colors.black87,
+  textStyle: const TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.w500,
+    color: Colors.black87,
+  ),
+  animationDuration: const Duration(milliseconds: 150),
+  showBorders: false,
+  showOuterBorder: false,
+  borderColor: Colors.grey.withOpacity(0.5),
+);
+
+// Utilisation du thème personnalisé
+SecretKeyboard(
+  controller: _controller,
+  theme: monTheme,
+  // ...
+)
+```
+
+## Exemple complet avec thème et effets
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
+
+class SecretKeyboardDemo extends StatefulWidget {
+  const SecretKeyboardDemo({Key? key}) : super(key: key);
+
+  @override
+  State<SecretKeyboardDemo> createState() => _SecretKeyboardDemoState();
+}
+
+class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
+  late SecretKeyboardController _controller;
+  final TextEditingController _textController = TextEditingController();
+  SecretKeyboardTheme _selectedTheme = SecretKeyboardTheme.material;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = SecretKeyboardController(
+      fingerprintEnabled: true,
+      maxLength: 4,
+      randomizeKeys: true,
+      gridColumns: 4,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Clavier Sécurisé')),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Sélecteur de thème
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: DropdownButton<SecretKeyboardTheme>(
+              value: _selectedTheme,
+              isExpanded: true,
+              onChanged: (theme) {
+                if (theme != null) {
+                  setState(() {
+                    _selectedTheme = theme;
+                  });
+                }
+              },
+              items: const [
+                DropdownMenuItem(
+                  value: SecretKeyboardTheme.material,
+                  child: Text('Thème Material'),
+                ),
+                DropdownMenuItem(
+                  value: SecretKeyboardTheme.neumorphic,
+                  child: Text('Thème Neumorphique'),
+                ),
+                DropdownMenuItem(
+                  value: SecretKeyboardTheme.iOS,
+                  child: Text('Thème iOS'),
+                ),
+                DropdownMenuItem(
+                  value: SecretKeyboardTheme.dark,
+                  child: Text('Thème Sombre'),
+                ),
+                DropdownMenuItem(
+                  value: SecretKeyboardTheme.banking,
+                  child: Text('Thème Bancaire'),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // TextField lié au clavier
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: TextField(
+              controller: _textController,
+              readOnly: true,
+              textAlign: TextAlign.center,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Code PIN',
+              ),
+              style: const TextStyle(fontSize: 24, letterSpacing: 8),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Clavier secret avec thème
+          SecretKeyboard(
+            controller: _controller,
+            textController: _textController,
+            theme: _selectedTheme,  // Utilisation du thème sélectionné
+            onClick: (code) {
+              // Traitement du code
+            },
+            onCodeCompleted: (code) {
+              // Code complet, faire quelque chose
+              print('Code complet: $code');
+            },
+            onFingerprintClick: (_) {
+              // Lancer l'authentification par empreinte digitale
+              print('Authentification par empreinte digitale demandée');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
 ## Personnalisation
 
 Le clavier est hautement personnalisable. Voici quelques exemples :
@@ -209,30 +414,14 @@ SecretKeyboard(
 )
 
 // Formatter personnalisé pour empêcher le zero initial
-class PreventLeadingZeroFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue, 
-    TextEditingValue newValue
-  ) {
-    // Si la nouvelle valeur est un '0' seul et qu'on commence une saisie
-    if (newValue.text == '0' && oldValue.text.isEmpty) {
-      return oldValue; // Rejeter le '0' initial
-    }
-    
-    // Si on a un '0' suivi d'autres chiffres (ex: '01'), le remplacer par les chiffres qui suivent
-    if (newValue.text.startsWith('0') && newValue.text.length > 1) {
-      final sanitized = newValue.text.replaceFirst(RegExp(r'^0+'), '');
-      return TextEditingValue(
-        text: sanitized,
-        selection: TextSelection.collapsed(offset: sanitized.length),
-      );
-    }
-    
-    // Sinon, accepter la valeur
-    return newValue;
-  }
-}
+SecretKeyboard(
+  controller: keyboardController,
+  textController: textController,
+  inputFormatters: [
+    PreventLeadingZeroFormatter(),  // Formatter inclus dans la bibliothèque
+  ],
+  // ...
+)
 
 // Formatter personnalisé pour un format spécifique (XX-XXXX)
 class ReferenceCodeFormatter extends TextInputFormatter {
@@ -273,7 +462,7 @@ SecretKeyboard(
 )
 ```
 
-### Couleurs des indicateurs
+### Couleurs des indicateurs et affichage de la grille
 
 ```dart
 SecretKeyboard(
@@ -281,6 +470,8 @@ SecretKeyboard(
   indicatorActiveColor: Colors.blue,    // Couleur des indicateurs actifs
   indicatorInactiveColor: Colors.grey,  // Couleur des indicateurs inactifs
   indicatorBackgroundColor: Colors.white, // Couleur de fond des indicateurs
+  showGrid: true,                       // Afficher la grille
+  showOuterBorder: true,                // Afficher la bordure externe
   // ...
 )
 ```
@@ -337,6 +528,7 @@ SecretKeyboard({
   required Function(String) onClick,
   bool showSecretCode = true,
   bool showGrid = true,
+  bool showOuterBorder = false,
   double cellAspectRatio = 1,
   Function(String)? onCodeCompleted,
   Function(String)? onFingerprintClick,
@@ -359,6 +551,32 @@ SecretKeyboard({
   List<TextInputFormatter>? inputFormatters,
   // Paramètre pour la configuration des colonnes
   int gridColumns = 4,
+  // Paramètres pour les effets tactiles
+  KeyTouchEffect touchEffect = KeyTouchEffect.none,
+  Color? touchEffectColor,
+  Duration touchEffectDuration = const Duration(milliseconds: 150),
+  double touchEffectScaleValue = 0.95,
+  // Paramètre pour le thème
+  SecretKeyboardTheme? theme,
+})
+```
+
+### SecretKeyboardTheme
+
+Classe représentant un thème pour le clavier secret.
+
+```dart
+SecretKeyboardTheme({
+  required KeyTouchEffect touchEffect,
+  required Color primaryColor,
+  Color? secondaryColor,
+  required Color backgroundColor,
+  required Color textColor,
+  TextStyle? textStyle,
+  Duration animationDuration = const Duration(milliseconds: 150),
+  bool showBorders = false,
+  bool showOuterBorder = false,
+  Color? borderColor,
 })
 ```
 
