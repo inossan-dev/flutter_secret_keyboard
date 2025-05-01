@@ -1,6 +1,31 @@
 # CHANGELOG
 
-## 1.0.1 (1 mai 2025)
+## 1.2.0 (01 mai 2025)
+
+### Ajouts
+
+- Configuration du nombre de colonnes du clavier (3 ou 4) pour s'adapter à différentes mises en page
+
+### Améliorations
+
+- Adaptation intelligente du clavier en fonction du nombre de colonnes sélectionné
+
+## 1.1.0 (30 avril 2025)
+
+### Améliorations
+
+- Mise à jour des contraintes de compatibilité : Dart SDK >=2.17.0 <4.0.0 et Flutter >=2.10.0
+- Amélioration du traitement des zéros initiaux avec `PreventLeadingZeroFormatter`
+- Optimisation des performances avec les inputFormatters complexes
+- Meilleure compatibilité avec les versions plus anciennes de Dart et Flutter
+
+### Corrections
+
+- Correction du problème de non-prise en compte du `FilteringTextInputFormatter.deny(RegExp(r'^0'))`
+- Amélioration de la gestion des suppressions lors de l'utilisation des formatters
+- Optimisation de la synchronisation entre le controller et le texte formaté
+
+## 1.0.1 (30 avril 2025)
 
 ### Ajouts
 

@@ -74,6 +74,9 @@ class SecretKeyboard extends StatefulWidget {
   /// Liste de formateurs d'entrée pour le TextField lié
   final List<TextInputFormatter>? inputFormatters;
 
+  /// Nombre de colonnes dans la grille du clavier (3 ou 4)
+  final int gridColumns;
+
   /// Constructeur avec paramètres personnalisables
   const SecretKeyboard({
     super.key,
@@ -99,7 +102,8 @@ class SecretKeyboard extends StatefulWidget {
     this.obscureText = true,
     this.obscuringCharacter = '•',
     this.inputFormatters,
-  });
+    this.gridColumns = 4,
+  }) : assert(gridColumns == 3 || gridColumns == 4, 'Le nombre de colonnes doit être 3 ou 4');
 
   @override
   State<SecretKeyboard> createState() => _SecretKeyboardState();
@@ -107,13 +111,14 @@ class SecretKeyboard extends StatefulWidget {
 
 class _SecretKeyboardState extends State<SecretKeyboard> {
   bool _isCompleted = false;
-  final int _gridViewCrossAxisCount = 4;
+  late int _gridViewCrossAxisCount;
   SecretKeyboardTextFieldBinding? _textFieldBinding;
 
   @override
   void initState() {
     super.initState();
     _isCompleted = false;
+    _gridViewCrossAxisCount = widget.gridColumns;
 
     // Si un contrôleur de texte est fourni, configurer la liaison
     if (widget.textController != null) {
@@ -131,6 +136,11 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
   void didUpdateWidget(SecretKeyboard oldWidget) {
     super.didUpdateWidget(oldWidget);
     _isCompleted = false;
+
+    // Mettre à jour le nombre de colonnes si nécessaire
+    if (widget.gridColumns != oldWidget.gridColumns) {
+      _gridViewCrossAxisCount = widget.gridColumns;
+    }
 
     // Gérer les changements de contrôleur de texte
     if (widget.textController != oldWidget.textController ||
@@ -208,22 +218,40 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
   /// Créer une décoration de bordure pour la grille
   BoxDecoration _createBoxDecoration(int index) {
     index++;
-    return BoxDecoration(
-      border: Border(
-        left: BorderSide(
-          color: ((index >= 2 && index <= 4) ||
-              (index >= 6 && index <= 8) ||
-              (index >= 10 && index <= 12))
-              ? Colors.black
-              : Colors.transparent,
-          width: 0.8,
+
+    // Adaptation en fonction du nombre de colonnes
+    if (_gridViewCrossAxisCount == 3) {
+      return BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: ((index % 3 != 1) ? Colors.black : Colors.transparent),
+            width: 0.8,
+          ),
+          top: BorderSide(
+            color: index > _gridViewCrossAxisCount ? Colors.black : Colors.transparent,
+            width: 0.8,
+          ),
         ),
-        top: BorderSide(
-          color: index > _gridViewCrossAxisCount ? Colors.black : Colors.transparent,
-          width: 0.8,
+      );
+    } else {
+      // Configuration originale pour 4 colonnes
+      return BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: ((index >= 2 && index <= 4) ||
+                (index >= 6 && index <= 8) ||
+                (index >= 10 && index <= 12))
+                ? Colors.black
+                : Colors.transparent,
+            width: 0.8,
+          ),
+          top: BorderSide(
+            color: index > _gridViewCrossAxisCount ? Colors.black : Colors.transparent,
+            width: 0.8,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override

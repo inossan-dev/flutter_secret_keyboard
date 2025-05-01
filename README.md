@@ -5,6 +5,7 @@ Une bibliothèque Flutter pour implémenter un clavier de saisie de code secret 
 ## Caractéristiques
 
 - Clavier numérique avec disposition aléatoire des touches pour une sécurité accrue
+- Configuration flexible avec support pour 3 ou 4 colonnes
 - Option pour activer ou désactiver le mélange aléatoire des touches
 - Liaison avec un TextField pour afficher le code saisi
 - Support pour les inputFormatters permettant de formater le texte saisi
@@ -20,8 +21,13 @@ Ajoutez `flutter_secret_keyboard` à votre fichier pubspec.yaml :
 
 ```yaml
 dependencies:
-  flutter_secret_keyboard: ^1.0.1
+  flutter_secret_keyboard: ^1.0.2
 ```
+
+### Configuration requise
+
+- Dart SDK: >=2.17.0 <4.0.0
+- Flutter: >=2.10.0
 
 ## Utilisation
 
@@ -51,6 +57,7 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
       fingerprintEnabled: true,     // Activer le bouton d'empreinte digitale
       maxLength: 4,                 // Définir la longueur du code à 4 chiffres
       randomizeKeys: true,          // Activer le mélange aléatoire des touches
+      gridColumns: 3,               // Configurer le clavier avec 3 colonnes
     );
   }
 
@@ -88,6 +95,7 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
           SecretKeyboard(
             controller: _controller,
             codeLength: 4,
+            gridColumns: 3,           // Configuration avec 3 colonnes
             textController: _textController,  // Liaison avec le TextField
             obscureText: true,               // Masquer le texte
             inputFormatters: [              // Ajout de formatters
@@ -130,13 +138,34 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
 
 Le clavier est hautement personnalisable. Voici quelques exemples :
 
+### Configuration du nombre de colonnes
+
+```dart
+// Dans le contrôleur
+SecretKeyboardController(
+  gridColumns: 3,  // 3 colonnes pour une disposition téléphone
+  // ...
+)
+
+// Dans le widget
+SecretKeyboard(
+  gridColumns: 3,  // 3 colonnes (doit correspondre au controller)
+  // ...
+)
+```
+
+### Mode 3 colonnes vs 4 colonnes
+
+- **3 colonnes** : Disposition similaire au clavier téléphonique standard (1-9, puis 0)
+- **4 colonnes** : Disposition élargie pour plus d'espace entre les touches
+
 ### Activation/désactivation du mélange des touches
 
 ```dart
 // Dans le contrôleur
 SecretKeyboardController(
-randomizeKeys: true,  // true pour mélanger, false pour l'ordre standard
-// ...
+  randomizeKeys: true,  // true pour mélanger, false pour l'ordre standard
+  // ...
 )
 ```
 
@@ -148,20 +177,20 @@ final TextEditingController textController = TextEditingController();
 
 // L'utiliser avec le clavier
 SecretKeyboard(
-controller: keyboardController,
-textController: textController,  // Liaison avec le TextField
-obscureText: true,              // Masquer le texte avec des points
-obscuringCharacter: '•',        // Caractère de masquage personnalisé
-// ...
+  controller: keyboardController,
+  textController: textController,  // Liaison avec le TextField
+  obscureText: true,              // Masquer le texte avec des points
+  obscuringCharacter: '•',        // Caractère de masquage personnalisé
+  // ...
 )
 
 // Important : ne pas définir obscureText sur le TextField lui-même
 // car c'est géré par le SecretKeyboard
 TextField(
-controller: textController,
-readOnly: true,      // Recommandé pour empêcher l'édition directe
-// Ne pas définir obscureText ici
-// ...
+  controller: textController,
+  readOnly: true,      // Recommandé pour empêcher l'édition directe
+  // Ne pas définir obscureText ici
+  // ...
 )
 ```
 
@@ -178,6 +207,32 @@ SecretKeyboard(
   ],
   // ...
 )
+
+// Formatter personnalisé pour empêcher le zero initial
+class PreventLeadingZeroFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue, 
+    TextEditingValue newValue
+  ) {
+    // Si la nouvelle valeur est un '0' seul et qu'on commence une saisie
+    if (newValue.text == '0' && oldValue.text.isEmpty) {
+      return oldValue; // Rejeter le '0' initial
+    }
+    
+    // Si on a un '0' suivi d'autres chiffres (ex: '01'), le remplacer par les chiffres qui suivent
+    if (newValue.text.startsWith('0') && newValue.text.length > 1) {
+      final sanitized = newValue.text.replaceFirst(RegExp(r'^0+'), '');
+      return TextEditingValue(
+        text: sanitized,
+        selection: TextSelection.collapsed(offset: sanitized.length),
+      );
+    }
+    
+    // Sinon, accepter la valeur
+    return newValue;
+  }
+}
 
 // Formatter personnalisé pour un format spécifique (XX-XXXX)
 class ReferenceCodeFormatter extends TextInputFormatter {
@@ -206,12 +261,13 @@ class ReferenceCodeFormatter extends TextInputFormatter {
   }
 }
 
-// Utilisation du formatter personnalisé
+// Utilisation des formatters personnalisés
 SecretKeyboard(
   controller: keyboardController,
   textController: textController,
   inputFormatters: [
-    ReferenceCodeFormatter(),  // Formatter personnalisé
+    PreventLeadingZeroFormatter(),  // Empêcher le zero initial
+    ReferenceCodeFormatter(),       // Formatter personnalisé pour le format XX-XXXX
   ],
   // ...
 )
@@ -267,6 +323,7 @@ SecretKeyboardController({
   bool fingerprintEnabled = false,
   int maxLength = 4,
   bool randomizeKeys = true,  // Option pour le mélange des touches
+  int gridColumns = 4,       // Nombre de colonnes (3 ou 4)
 })
 ```
 
@@ -298,8 +355,10 @@ SecretKeyboard({
   TextEditingController? textController,
   bool obscureText = true,
   String obscuringCharacter = '•',
-  // Nouveau paramètre pour le formatage du texte
+  // Paramètre pour le formatage du texte
   List<TextInputFormatter>? inputFormatters,
+  // Paramètre pour la configuration des colonnes
+  int gridColumns = 4,
 })
 ```
 
@@ -309,12 +368,12 @@ Classe utilitaire pour lier un clavier secret à un TextField.
 
 ```dart
 SecretKeyboardTextFieldBinding({
-required SecretKeyboardController keyboardController,
-required TextEditingController textEditingController,
-bool obscureText = true,
-String obscuringCharacter = '•',
-// Nouveau paramètre pour le formatage du texte
-List<TextInputFormatter>? inputFormatters,
+  required SecretKeyboardController keyboardController,
+  required TextEditingController textEditingController,
+  bool obscureText = true,
+  String obscuringCharacter = '•',
+  // Paramètre pour le formatage du texte
+  List<TextInputFormatter>? inputFormatters,
 })
 ```
 

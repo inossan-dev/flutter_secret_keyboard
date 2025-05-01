@@ -1,6 +1,5 @@
 // Fichier: example/lib/main.dart
 
-import 'package:example/dual_input_example.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
@@ -35,7 +34,10 @@ class SecretKeyboardDemo extends StatefulWidget {
 
 class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
   final TextEditingController _pinController = TextEditingController();
-  final SecretKeyboardController _pinKeyboardController = SecretKeyboardController();
+  final SecretKeyboardController _pinKeyboardController = SecretKeyboardController(
+    randomizeKeys: false,
+    gridColumns: 3,
+  );
 
   final TextEditingController _formatController = TextEditingController();
   final SecretKeyboardController _formatKeyboardController = SecretKeyboardController();
@@ -55,72 +57,75 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
       appBar: AppBar(
         title: const Text('SecretKeyboard avec inputFormatters'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // TextField pour afficher le code PIN
-            TextField(
-              controller: _pinController,
-              decoration: const InputDecoration(
-                labelText: 'Code PIN (limité à 4 chiffres)',
-                border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // TextField pour afficher le code PIN
+              TextField(
+                controller: _pinController,
+                decoration: const InputDecoration(
+                  labelText: 'Code PIN (limité à 4 chiffres)',
+                  border: OutlineInputBorder(),
+                ),
+                readOnly: true, // Lecture seule, modifié par le clavier
+                obscureText: true,
               ),
-              readOnly: true, // Lecture seule, modifié par le clavier
-              obscureText: true,
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Clavier secret avec limite de 4 chiffres
-            SecretKeyboard(
-              controller: _pinKeyboardController,
-              onClick: (value) {
-                // Action sur clic (optionnel)
-              },
-              onCodeCompleted: (code) {
-                // Action lorsque le code est complet
-                print('Code PIN complété: $code');
-              },
-              textController: _pinController,
-              codeLength: 4,
-              inputFormatters: [
-                // Limite la longueur à 4 caractères
-                LengthLimitingTextInputFormatter(4),
-                // Accepte uniquement les chiffres
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // TextField pour afficher le code formaté
-            TextField(
-              controller: _formatController,
-              decoration: const InputDecoration(
-                labelText: 'Code de référence (format XX-XXXX)',
-                border: OutlineInputBorder(),
+              // Clavier secret avec limite de 4 chiffres
+              SecretKeyboard(
+                controller: _pinKeyboardController,
+                onClick: (value) {
+                  // Action sur clic (optionnel)
+                },
+                onCodeCompleted: (code) {
+                  // Action lorsque le code est complet
+                  print('Code PIN complété: $code');
+                },
+                textController: _pinController,
+                codeLength: 4,
+                inputFormatters: [
+                  // Limite la longueur à 4 caractères
+                  LengthLimitingTextInputFormatter(4),
+                  // Accepte uniquement les chiffres
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                gridColumns: 3,
               ),
-              readOnly: true, // Lecture seule, modifié par le clavier
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 32),
 
-            // Clavier secret avec formatter personnalisé
-            SecretKeyboard(
-              controller: _formatKeyboardController,
-              onClick: (value) {
-                // Action sur clic (optionnel)
-              },
-              textController: _formatController,
-              codeLength: 7, // 7 caractères incluant le tiret
-              inputFormatters: [
-                // Formate automatiquement l'entrée selon le modèle XX-XXXX
-                _ReferenceCodeFormatter(),
-              ],
-            ),
-          ],
+              // TextField pour afficher le code formaté
+              TextField(
+                controller: _formatController,
+                decoration: const InputDecoration(
+                  labelText: 'Code de référence (format XX-XXXX)',
+                  border: OutlineInputBorder(),
+                ),
+                readOnly: true, // Lecture seule, modifié par le clavier
+              ),
+
+              const SizedBox(height: 16),
+
+              // Clavier secret avec formatter personnalisé
+              SecretKeyboard(
+                controller: _formatKeyboardController,
+                onClick: (value) {
+                  // Action sur clic (optionnel)
+                },
+                textController: _formatController,
+                codeLength: 7, // 7 caractères incluant le tiret
+                inputFormatters: [
+                  // Formate automatiquement l'entrée selon le modèle XX-XXXX
+                  _ReferenceCodeFormatter(),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
