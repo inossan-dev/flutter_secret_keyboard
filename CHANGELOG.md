@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 1.4.0 (02 mai 2025)
+
+### Ajouts
+
+- Fonctionnalité de brouillage visuel pour une sécurité renforcée :
+  - Effet de flou temporaire sur chaque touche après pression
+  - Personnalisation de l'intensité et de la durée du flou
+  - Option pour activer/désactiver cette fonctionnalité
+- Ajout de l'effet de flou à l'énumération KeyTouchEffect
+- Nouveaux thèmes prédéfinis avec effet de flou :
+  - Thème "Flou moderne" (blurredModern)
+  - Thème "Flou sombre" (blurredDark)
+
+### Améliorations
+
+- Amélioration de la sécurité visuelle pour empêcher les observateurs de voir les touches pressées
+- Optimisation des animations de flou pour de meilleures performances
+
 ## 1.3.0 (01 mai 2025)
 
 ### Ajouts

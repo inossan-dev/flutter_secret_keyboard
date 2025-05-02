@@ -13,6 +13,15 @@ class SecretKeyboardConstants {
   static const String EMPTY_KEY = "";
 }
 
+/// Constantes pour l'effet de flou
+class BlurEffectConstants {
+  /// Intensité de flou par défaut
+  static const double DEFAULT_BLUR_INTENSITY = 3.0;
+
+  /// Durée de l'effet de flou par défaut
+  static const Duration DEFAULT_BLUR_DURATION = Duration(milliseconds: 300);
+}
+
 /// Énumération des fonctions d'authentification
 enum AuthenticationFunction {
   /// Authentification pour valider une transaction
@@ -46,5 +55,8 @@ enum KeyTouchEffect {
   elevation,
 
   /// Effet d'animation de bordure
-  border
+  border,
+
+  /// Effet de flou temporaire
+  blur,
 }

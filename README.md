@@ -5,8 +5,9 @@ Une bibliothèque Flutter pour implémenter un clavier de saisie de code secret 
 ## Caractéristiques
 
 - Clavier numérique avec disposition aléatoire des touches pour une sécurité accrue
-- **Effets tactiles interactifs** (ripple, échelle, couleur, élévation, bordure)
-- **Système de thèmes prédéfinis** (Material, Neumorphique, iOS, Sombre, Bancaire)
+- **Effets tactiles interactifs** (ripple, échelle, couleur, élévation, bordure, flou)
+- **Brouillage visuel** des touches après pression pour une sécurité renforcée
+- **Système de thèmes prédéfinis** (Material, Neumorphique, iOS, Sombre, Bancaire, Flou)
 - Configuration flexible avec support pour 3 ou 4 colonnes
 - Option pour activer ou désactiver le mélange aléatoire des touches
 - Liaison avec un TextField pour afficher le code saisi
@@ -23,7 +24,7 @@ Ajoutez `flutter_secret_keyboard` à votre fichier pubspec.yaml :
 
 ```yaml
 dependencies:
-  flutter_secret_keyboard: ^1.3.0
+  flutter_secret_keyboard: ^1.4.0
 ```
 
 ### Configuration requise
@@ -136,11 +137,29 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
 }
 ```
 
-## Nouveautés de la version 1.3.0
+## Nouveautés de la version 1.4.0
+
+### Brouillage visuel
+
+Cette fonctionnalité de sécurité applique un effet de flou temporaire sur chaque touche immédiatement après qu'elle soit pressée, rendant plus difficile pour un observateur potentiel de voir quelle touche a été utilisée.
+
+```dart
+// Utilisation de l'effet de flou
+SecretKeyboard(
+  controller: _controller,
+  touchEffect: KeyTouchEffect.blur,    // Activer l'effet de flou
+  blurIntensity: 5.0,                  // Intensité du flou (1.0 à 10.0)
+  blurDuration: Duration(milliseconds: 300), // Durée de l'effet
+  blurEnabled: true,                   // Activer/désactiver la fonctionnalité
+  // ...
+)
+```
+
+L'effet de flou peut être combiné avec d'autres mesures de sécurité comme la disposition aléatoire des touches pour une protection maximale.
 
 ### Effets tactiles
 
-Le clavier secret propose désormais cinq types d'effets tactiles pour améliorer l'expérience utilisateur :
+Le clavier secret propose désormais six types d'effets tactiles pour améliorer l'expérience utilisateur :
 
 ```dart
 // Utilisation d'un effet tactile
@@ -161,6 +180,7 @@ Types d'effets disponibles :
 - `KeyTouchEffect.color` - Changement de couleur
 - `KeyTouchEffect.elevation` - Effet d'élévation/ombre
 - `KeyTouchEffect.border` - Animation de bordure
+- `KeyTouchEffect.blur` - Effet de flou temporaire
 
 ### Système de thèmes prédéfinis
 
@@ -185,6 +205,8 @@ Thèmes disponibles :
 - `SecretKeyboardTheme.banking` - Style professionnel et sécurisé
 - `SecretKeyboardTheme.gridLines` - Avec bordures internes seulement
 - `SecretKeyboardTheme.fullGrid` - Avec bordures internes et externes
+- `SecretKeyboardTheme.blurredModern` - Style moderne avec effet de flou
+- `SecretKeyboardTheme.blurredDark` - Style sombre avec effet de flou
 
 ### Création d'un thème personnalisé
 
@@ -205,6 +227,10 @@ final monTheme = SecretKeyboardTheme(
   showBorders: false,
   showOuterBorder: false,
   borderColor: Colors.grey.withOpacity(0.5),
+  // Paramètres pour l'effet de flou
+  blurIntensity: 4.0,
+  blurDuration: const Duration(milliseconds: 350),
+  blurEnabled: true,
 );
 
 // Utilisation du thème personnalisé
@@ -291,6 +317,14 @@ class _SecretKeyboardDemoState extends State<SecretKeyboardDemo> {
                 DropdownMenuItem(
                   value: SecretKeyboardTheme.banking,
                   child: Text('Thème Bancaire'),
+                ),
+                DropdownMenuItem(
+                  value: SecretKeyboardTheme.blurredModern,
+                  child: Text('Thème Flou Moderne'),
+                ),
+                DropdownMenuItem(
+                  value: SecretKeyboardTheme.blurredDark,
+                  child: Text('Thème Flou Sombre'),
                 ),
               ],
             ),
@@ -556,6 +590,10 @@ SecretKeyboard({
   Color? touchEffectColor,
   Duration touchEffectDuration = const Duration(milliseconds: 150),
   double touchEffectScaleValue = 0.95,
+  // Paramètres pour l'effet de flou
+  double blurIntensity = 3.0,
+  Duration blurDuration = const Duration(milliseconds: 300),
+  bool blurEnabled = true,
   // Paramètre pour le thème
   SecretKeyboardTheme? theme,
 })
@@ -577,6 +615,10 @@ SecretKeyboardTheme({
   bool showBorders = false,
   bool showOuterBorder = false,
   Color? borderColor,
+  // Paramètres pour l'effet de flou
+  double blurIntensity = 3.0,
+  Duration blurDuration = const Duration(milliseconds: 300),
+  bool blurEnabled = true,
 })
 ```
 

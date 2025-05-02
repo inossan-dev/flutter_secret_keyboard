@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/blur_effect.dart';
 import 'package:flutter_secret_keyboard/src/widgets/animations/border_animation_effect.dart';
 import 'package:flutter_secret_keyboard/src/widgets/animations/color_change_effect.dart';
 import 'package:flutter_secret_keyboard/src/widgets/animations/elevation_effect.dart';
@@ -97,6 +98,15 @@ class SecretKeyboard extends StatefulWidget {
   /// Afficher une bordure externe lorsque showGrid est true et qu'aucun thème n'est défini
   final bool showOuterBorder;
 
+  /// Intensité maximale de l'effet de flou
+  final double blurIntensity;
+
+  /// Durée de l'effet de flou
+  final Duration blurDuration;
+
+  /// Activer/désactiver l'effet de flou
+  final bool blurEnabled;
+
   /// Constructeur avec paramètres personnalisables
   SecretKeyboard({
     super.key,
@@ -129,6 +139,9 @@ class SecretKeyboard extends StatefulWidget {
     touchEffectColor,
     this.touchEffectScaleValue = 0.95,
     touchEffectDuration = const Duration(milliseconds: 150),
+    blurIntensity = BlurEffectConstants.DEFAULT_BLUR_INTENSITY,
+    blurDuration = BlurEffectConstants.DEFAULT_BLUR_DURATION,
+    blurEnabled = true,
   })  : touchEffect = theme?.touchEffect ?? touchEffect,
         touchEffectColor = theme?.primaryColor ?? touchEffectColor,
         touchEffectDuration = theme?.animationDuration ?? touchEffectDuration,
@@ -137,6 +150,9 @@ class SecretKeyboard extends StatefulWidget {
         indicatorInactiveColor =
             theme?.secondaryColor ?? indicatorInactiveColor ?? Colors.black,
         cellStyle = theme?.textStyle ?? cellStyle,
+        blurIntensity = theme?.blurIntensity ?? blurIntensity,
+        blurDuration = theme?.blurDuration ?? blurDuration,
+        blurEnabled = theme?.blurEnabled ?? blurEnabled,
         assert(gridColumns == 3 || gridColumns == 4,
             'Le nombre de colonnes doit être 3 ou 4');
 
@@ -444,6 +460,15 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
                             borderColor: widget.touchEffectColor ??
                                 widget.indicatorActiveColor,
                             duration: widget.touchEffectDuration,
+                            child: keyContainer,
+                          );
+
+                        case KeyTouchEffect.blur:
+                          return BlurKeyEffect(
+                            onTap: onTap,
+                            maxBlurIntensity: widget.blurIntensity,
+                            blurDuration: widget.blurDuration,
+                            enabled: widget.blurEnabled,
                             child: keyContainer,
                           );
                       }

@@ -105,6 +105,8 @@ class _ThemeDemoPageState extends State<ThemeDemoPage> {
     {'name': 'Bancaire', 'theme': SecretKeyboardTheme.banking},
     {'name': 'Grille simple', 'theme': SecretKeyboardTheme.gridLines},
     {'name': 'Grille complète', 'theme': SecretKeyboardTheme.fullGrid},
+    {'name': 'Flou moderne', 'theme': SecretKeyboardTheme.blurredModern},
+    {'name': 'Flou sombre', 'theme': SecretKeyboardTheme.blurredDark},
   ];
 
   // Thème sélectionné (par défaut: Material Design)
@@ -238,6 +240,7 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
     {'name': 'Effet de couleur', 'effect': KeyTouchEffect.color},
     {'name': 'Effet d\'élévation', 'effect': KeyTouchEffect.elevation},
     {'name': 'Effet de bordure', 'effect': KeyTouchEffect.border},
+    {'name': 'Flou', 'effect': KeyTouchEffect.blur},
   ];
 
   // Effet sélectionné (par défaut: aucun)
@@ -251,6 +254,10 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
 
   // Durée de l'animation
   int _animationDurationMs = 150;
+
+  // Paramètres pour l'effet de flou
+  double _blurIntensity = 3.0; // Intensité du flou par défaut
+  bool _blurEnabled = true; // Activation/désactivation du flou
 
   @override
   void dispose() {
@@ -364,6 +371,36 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
               ],
             ),
 
+          // Ajout des contrôles spécifiques pour l'effet de flou
+          if (_selectedEffectIndex == 6) // Effet de flou
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Intensité du flou:'),
+                Slider(
+                  value: _blurIntensity,
+                  min: 1.0,
+                  max: 10.0,
+                  divisions: 18,
+                  label: _blurIntensity.toStringAsFixed(1),
+                  onChanged: (value) {
+                    setState(() {
+                      _blurIntensity = value;
+                    });
+                  },
+                ),
+                SwitchListTile(
+                  title: const Text('Activer l\'effet de flou'),
+                  value: _blurEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _blurEnabled = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+
           const SizedBox(height: 24),
 
           // Affichage du code
@@ -402,6 +439,9 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
             touchEffectColor: _effectColor,
             touchEffectDuration: Duration(milliseconds: _animationDurationMs),
             touchEffectScaleValue: _scaleValue,
+            blurIntensity: _blurIntensity,
+            blurDuration: Duration(milliseconds: _animationDurationMs),
+            blurEnabled: _blurEnabled,
             onClick: (value) {
               // Action sur clic
             },

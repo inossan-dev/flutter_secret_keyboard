@@ -32,6 +32,15 @@ class SecretKeyboardTheme {
   /// Couleur des bordures (si showBorders ou showOuterBorder est true)
   final Color? borderColor;
 
+  /// Intensité du flou (lorsque touchEffect est KeyTouchEffect.blur)
+  final double blurIntensity;
+
+  /// Durée de l'effet de flou
+  final Duration blurDuration;
+
+  /// Activation de l'effet de flou
+  final bool blurEnabled;
+
   /// Constructeur de thème personnalisé
   const SecretKeyboardTheme({
     required this.touchEffect,
@@ -44,6 +53,9 @@ class SecretKeyboardTheme {
     this.showBorders = false,
     this.showOuterBorder = false,
     this.borderColor,
+    this.blurIntensity = BlurEffectConstants.DEFAULT_BLUR_INTENSITY,
+    this.blurDuration = BlurEffectConstants.DEFAULT_BLUR_DURATION,
+    this.blurEnabled = true,
   });
 
   /// Thème avec bordures internes seulement
@@ -201,5 +213,38 @@ class SecretKeyboardTheme {
       fontWeight: FontWeight.w600,
       letterSpacing: 0.25,
     ),
+  );
+
+  /// Thème avec effet de flou - style moderne
+  static const SecretKeyboardTheme blurredModern = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.blur,
+    primaryColor: Colors.blue,
+    backgroundColor: Colors.white,
+    textColor: Colors.black,
+    textStyle: TextStyle(
+      fontSize: 24,
+      color: Colors.black87,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.2,
+    ),
+    blurIntensity: 4.0,
+    blurDuration: Duration(milliseconds: 350),
+  );
+
+  /// Thème avec effet de flou - style sombre
+  static const SecretKeyboardTheme blurredDark = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.blur,
+    primaryColor: Color(0xFF0DFF9C),
+    backgroundColor: Color(0xFF121212),
+    secondaryColor: Color(0xFF2C2C2C),
+    textColor: Colors.white,
+    textStyle: TextStyle(
+      fontSize: 24,
+      color: Colors.white,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.15,
+    ),
+    blurIntensity: 5.0,
+    blurDuration: Duration(milliseconds: 400),
   );
 }
