@@ -113,7 +113,6 @@ class _DualInputExampleState extends State<DualInputExample> {
 
             // Clavier secret
             SecretKeyboard(
-              cellAspectRatio: 1.2,
               controller: _controller,
               showSecretCode: false,
               showGrid: false,

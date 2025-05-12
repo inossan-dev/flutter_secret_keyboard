@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
-
-import 'secret_code_item.dart';
+import 'package:flutter_secret_keyboard/src/widgets/secret_code_item.dart';
 
 /// Widget qui affiche les indicateurs du code secret (les points)
 class SecretCodeIndicator extends StatelessWidget {
@@ -41,40 +40,39 @@ class SecretCodeIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-        listenable: controller,
-        builder: (context, _) {
-          // S'assurer que nous avons accès aux données les plus récentes
-          final secretCodeDatas = controller.secretCodeDatas;
+      listenable: controller,
+      builder: (context, _) {
+        final secretCodeDatas = controller.secretCodeDatas;
 
-          return Container(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Align(
-              alignment: Alignment.center,
-              child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisSpacing: 1,
-                  mainAxisSpacing: 1,
-                  crossAxisCount: secretCodeDatas.length,
-                ),
-                itemCount: secretCodeDatas.length,
-                itemBuilder: (context, index) {
-                  var scd = secretCodeDatas[index];
-                  return SecretCodeItem(
-                    secretCodeData: scd,
-                    secretCodeSize: indicatorSize,
-                    secretCodeBorderPadding: borderPadding,
-                    activeColor: activeColor,
-                    inactiveColor: inactiveColor,
-                    backgroundColor: backgroundColor,
-                  );
-                },
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: Align(
+            alignment: Alignment.center,
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisSpacing: 1,
+                mainAxisSpacing: 1,
+                crossAxisCount: secretCodeDatas.length,
               ),
+              itemCount: secretCodeDatas.length,
+              itemBuilder: (context, index) {
+                var scd = secretCodeDatas[index];
+                return SecretCodeItem(
+                  secretCodeData: scd,
+                  secretCodeSize: indicatorSize,
+                  secretCodeBorderPadding: borderPadding,
+                  activeColor: activeColor,
+                  inactiveColor: inactiveColor,
+                  backgroundColor: backgroundColor,
+                );
+              },
             ),
-          );
-        }
+          ),
+        );
+      },
     );
   }
 }

@@ -8,12 +8,3 @@ class SecretCodeData {
     this.isActive = false,
   });
 }
-
-/// Classe contenant une liste de données de code secret
-class ListSecretCodeData {
-  /// Liste des données du code secret
-  final List<SecretCodeData>? listSecretCodeData;
-
-  /// Constructeur qui prend une liste de SecretCodeData
-  ListSecretCodeData(this.listSecretCodeData);
-}

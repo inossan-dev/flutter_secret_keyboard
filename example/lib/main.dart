@@ -196,7 +196,7 @@ class _ThemeDemoPageState extends State<ThemeDemoPage> {
             textController: _textController,
             theme: _themes[_selectedThemeIndex]['theme'],
             codeLength: 6,
-            cellAspectRatio: 1.5,
+            gridColumns: 3,
             onClick: (value) {
               // Action sur clic
             },
@@ -247,7 +247,7 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
   int _selectedEffectIndex = 0;
 
   // Valeur d'échelle (pour l'effet d'échelle)
-  double _scaleValue = 0.5;
+  double _scaleValue = 0.95;
 
   // Couleur de l'effet (pour les effets qui utilisent une couleur)
   Color _effectColor = Colors.blue;
@@ -256,8 +256,8 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
   int _animationDurationMs = 150;
 
   // Paramètres pour l'effet de flou
-  double _blurIntensity = 3.0; // Intensité du flou par défaut
-  bool _blurEnabled = true; // Activation/désactivation du flou
+  double _blurIntensity = 3.0;
+  bool _blurEnabled = true;
 
   @override
   void dispose() {
@@ -429,23 +429,25 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
           ),
           const SizedBox(height: 16),
 
-          // Clavier avec l'effet sélectionné
+          // Clavier avec l'effet sélectionné - utilisant le nouveau système de style
           SecretKeyboard(
             controller: _keyboardController,
             textController: _textController,
             codeLength: 4,
-            cellAspectRatio: 1.5,
-            touchEffect: _effects[_selectedEffectIndex]['effect'],
-            touchEffectColor: _effectColor,
-            touchEffectDuration: Duration(milliseconds: _animationDurationMs),
-            touchEffectScaleValue: _scaleValue,
-            blurIntensity: _blurIntensity,
-            blurDuration: Duration(milliseconds: _animationDurationMs),
-            blurEnabled: _blurEnabled,
+            showGrid: false,
+            style: SecretKeyboardStyle(
+              touchEffect: _effects[_selectedEffectIndex]['effect'],
+              touchEffectColor: _effectColor,
+              touchEffectDuration: Duration(milliseconds: _animationDurationMs),
+              touchEffectScaleValue: _scaleValue,
+              blurIntensity: _blurIntensity,
+              blurDuration: Duration(milliseconds: _animationDurationMs),
+              blurEnabled: _blurEnabled,
+              cellAspectRatio: 1.5,
+            ),
             onClick: (value) {
               // Action sur clic
             },
-            showGrid: false,
             onCodeCompleted: (code) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Code complété: $code')),
@@ -587,8 +589,10 @@ class _FormatterDemoPageState extends State<FormatterDemoPage> {
             controller: _pinKeyboardController,
             textController: _pinController,
             codeLength: 4,
-            cellAspectRatio: 1.5,
             theme: SecretKeyboardTheme.material,
+            style: const SecretKeyboardStyle(
+              cellAspectRatio: 1.5,
+            ),
             inputFormatters: [
               LengthLimitingTextInputFormatter(4),
               FilteringTextInputFormatter.digitsOnly,
@@ -638,8 +642,10 @@ class _FormatterDemoPageState extends State<FormatterDemoPage> {
             controller: _refKeyboardController,
             textController: _refController,
             codeLength: 7,  // 6 chiffres + 1 tiret
-            cellAspectRatio: 1.5,
             theme: SecretKeyboardTheme.iOS,
+            style: const SecretKeyboardStyle(
+              cellAspectRatio: 1.5,
+            ),
             inputFormatters: [
               _ReferenceCodeFormatter(),
             ],
@@ -688,8 +694,10 @@ class _FormatterDemoPageState extends State<FormatterDemoPage> {
             controller: _noZeroKeyboardController,
             textController: _noZeroController,
             codeLength: 5,
-            cellAspectRatio: 1.5,
             theme: SecretKeyboardTheme.banking,
+            style: const SecretKeyboardStyle(
+              cellAspectRatio: 1.5,
+            ),
             inputFormatters: [
               PreventLeadingZeroFormatter(),
               LengthLimitingTextInputFormatter(5),
@@ -875,15 +883,19 @@ class _ColumnsDemoPageState extends State<ColumnsDemoPage> {
           ),
           const SizedBox(height: 16),
 
+          // Clavier à 3 colonnes
           SecretKeyboard(
             controller: _3colKeyboardController,
             textController: _3colController,
             codeLength: 4,
-            cellAspectRatio: 1.25,
             gridColumns: 3,
             showGrid: _showGrid,
-            showOuterBorder: _showOuterBorder,
-            backgroundColor: Colors.white,
+            style: SecretKeyboardStyle(
+              cellAspectRatio: 1.25,
+              showOuterBorder: _showOuterBorder,
+              backgroundColor: Colors.white,
+              showBorders: _showGrid, // Ajout pour gérer correctement les bordures
+            ),
             onClick: (value) {
               // Action sur clic
             },
@@ -925,15 +937,19 @@ class _ColumnsDemoPageState extends State<ColumnsDemoPage> {
           ),
           const SizedBox(height: 16),
 
+          // Clavier à 4 colonnes
           SecretKeyboard(
             controller: _4colKeyboardController,
             textController: _4colController,
             codeLength: 4,
-            cellAspectRatio: 1.25,
             gridColumns: 4,
             showGrid: _showGrid,
-            showOuterBorder: _showOuterBorder,
-            backgroundColor: Colors.white,
+            style: SecretKeyboardStyle(
+              cellAspectRatio: 1.25,
+              showOuterBorder: _showOuterBorder,
+              backgroundColor: Colors.white,
+              showBorders: _showGrid, // Ajout pour gérer correctement les bordures
+            ),
             onClick: (value) {
               // Action sur clic
             },

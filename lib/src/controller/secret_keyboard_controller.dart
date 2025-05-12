@@ -2,6 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
+import 'package:flutter_secret_keyboard/src/constants/secret_keyboard_constants.dart';
+import 'package:flutter_secret_keyboard/src/models/secret_keyboard_data.dart';
+import 'package:flutter_secret_keyboard/src/utils/key_migration_helper.dart';
+import 'package:flutter_secret_keyboard/src/utils/validation_utils.dart';
 
 /// Contrôleur qui gère l'état et la logique du clavier secret
 class SecretKeyboardController with ChangeNotifier {
@@ -27,9 +31,9 @@ class SecretKeyboardController with ChangeNotifier {
   }) :
         _authenticationFunction = authenticationFunction,
         _fingerprintEnabled = fingerprintEnabled,
-        _maxLength = maxLength,
+        _maxLength = ValidationUtils.validateMaxLength(maxLength),
         _randomizeKeys = randomizeKeys,
-        _gridColumns = (gridColumns == 3 || gridColumns == 4) ? gridColumns : 4 {
+        _gridColumns = ValidationUtils.validateGridColumns(gridColumns) {
     // Initialisation des données
     initSecretCode();
     initSecretKeyboard();
@@ -63,9 +67,16 @@ class SecretKeyboardController with ChangeNotifier {
   ///
   /// Met également à jour les indicateurs visuels en fonction du nouveau code
   void setSecretCode(String newCode) {
-    if (_secretCode != newCode) {
-      _secretCode = newCode;
-      updateSecretCode(newCode);
+    // Validation de la longueur maximale
+    String validatedCode = newCode;
+    if (newCode.length > _maxLength) {
+      validatedCode = newCode.substring(0, _maxLength);
+    }
+
+    if (_secretCode != validatedCode) {
+      _secretCode = validatedCode;
+      updateSecretCode(validatedCode);
+      notifyListeners();
     }
   }
 
@@ -109,125 +120,132 @@ class SecretKeyboardController with ChangeNotifier {
   }
 
   /// Former le code secret en ajoutant un caractère
-  String formSecretCode(String key) {
-    if (key.isEmpty || key == " ") {
-      return _secretCode;
-    }
+  /// Forme le code secret en utilisant la nouvelle nomenclature
+  String formSecretCode(String keyValue) {
+    // Conversion automatique pour la rétrocompatibilité
+    final normalizedKey = SecretKeyboardConstants.convertLegacyKey(keyValue);
 
-    if (key != SecretKeyboardConstants.DELETE_KEY &&
-        key != SecretKeyboardConstants.FINGERPRINT_KEY) {
-      // Ajout d'un chiffre
-      if (_secretCode.isNotEmpty && _secretCode.length == _maxLength) {
-        return _secretCode;
-      }
-      _secretCode += key;
-    } else if (key == SecretKeyboardConstants.FINGERPRINT_KEY) {
-      // Empreinte digitale (action gérée par l'appelant)
-    } else if (key == SecretKeyboardConstants.DELETE_KEY) {
-      // Suppression d'un chiffre
+    if (normalizedKey == SecretKeyboardConstants.DELETE_KEY) {
       if (_secretCode.isNotEmpty) {
         _secretCode = _secretCode.substring(0, _secretCode.length - 1);
+        _secretCodeDatas = _secretCodeStateUpdate();
+        notifyListeners();
+      }
+    } else if (normalizedKey != SecretKeyboardConstants.FINGERPRINT_KEY &&
+        normalizedKey != SecretKeyboardConstants.EMPTY_KEY) {
+      if (_secretCode.length < _maxLength) {
+        _secretCode += normalizedKey;
+        _secretCodeDatas = _secretCodeStateUpdate();
+        notifyListeners();
       }
     }
-
-    // Mettre à jour les indicateurs visuels en fonction du nouveau code
-    updateSecretCode(_secretCode);
 
     return _secretCode;
   }
 
-  /// Initialiser le clavier avec des chiffres dans un ordre standard ou aléatoire
+  /// Former le code secret en ajoutant un caractère
+  List<SecretCodeData> _secretCodeStateUpdate() {
+    List<SecretCodeData> newSecretCodeDatas = [];
+    for (int i = 0; i < _maxLength; i++) {
+      if (i < _secretCode.length) {
+        newSecretCodeDatas.add(SecretCodeData(isActive: true));
+      } else {
+        newSecretCodeDatas.add(SecretCodeData(isActive: false));
+      }
+    }
+    return newSecretCodeDatas;
+  }
+
+  /// Initialiser le clavier avec les nouvelles structures de données
   void initSecretKeyboard() {
     List<String> keys = List.generate(10, (i) => "$i");
     List<String> orderedKeys;
 
     if (_randomizeKeys) {
-      // Mélanger tous les chiffres si l'option est activée
       orderedKeys = _shuffle(keys);
     } else {
-      // Ordre standard
       orderedKeys = [];
-
       if (_gridColumns == 3) {
-        // Configuration pour 3 colonnes: 1-9 puis 0
         for (int i = 1; i <= 9; i++) {
           orderedKeys.add("$i");
         }
-        // Le chiffre 0 sera placé séparément à la fin
       } else {
-        // Configuration pour 4 colonnes: 1-8 puis 9 et 0
         for (int i = 1; i <= 8; i++) {
           orderedKeys.add("$i");
         }
-        // Les chiffres 9 et 0 seront placés séparément à la fin
       }
     }
 
-    // Créer la liste du clavier
     List<SecretKeyboardData> listSecretKeyboard = [];
 
     if (_gridColumns == 3) {
-      // Pour 3 colonnes
+      // Configuration 3 colonnes
       if (_randomizeKeys) {
-        // Si mélangé, ajouter les 9 premiers chiffres aléatoires
         for (int i = 0; i < 9; i++) {
-          listSecretKeyboard.add(SecretKeyboardData(key: orderedKeys[i]));
+          listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[i]));
         }
       } else {
-        // Si ordre standard, ajouter les chiffres 1-9
         for (int i = 0; i < 9; i++) {
-          listSecretKeyboard.add(SecretKeyboardData(key: "${i + 1}"));
+          listSecretKeyboard.add(SecretKeyboardData.numeric("${i + 1}"));
         }
       }
 
-      // Pour 3 colonnes, la dernière ligne contient: [FP/vide][0][DL]
+      // Dernière ligne : [FP/vide][0][DL]
       if (_fingerprintEnabled) {
-        listSecretKeyboard.add(SecretKeyboardData(key: SecretKeyboardConstants.FINGERPRINT_KEY));
+        listSecretKeyboard.add(SecretKeyboardData.fingerprint());
       } else {
-        listSecretKeyboard.add(SecretKeyboardData(key: SecretKeyboardConstants.EMPTY_KEY));
+        listSecretKeyboard.add(SecretKeyboardData.empty());
       }
 
-      // Ajouter le '0'
       if (_randomizeKeys) {
-        listSecretKeyboard.add(SecretKeyboardData(key: orderedKeys[9]));
+        listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[9]));
       } else {
-        listSecretKeyboard.add(SecretKeyboardData(key: "0"));
+        listSecretKeyboard.add(SecretKeyboardData.numeric("0"));
       }
 
-      // Ajouter le bouton de suppression
-      listSecretKeyboard.add(SecretKeyboardData(key: SecretKeyboardConstants.DELETE_KEY));
+      listSecretKeyboard.add(SecretKeyboardData.delete());
     } else {
-      // Pour 4 colonnes - configuration originale
-      // Si mode mélangé, ajouter les 8 premiers chiffres aléatoires
-      // Sinon, ajouter les chiffres 1-8 dans l'ordre
+      // Configuration 4 colonnes
       for (int i = 0; i < 8; i++) {
-        listSecretKeyboard.add(SecretKeyboardData(key: _randomizeKeys ? orderedKeys[i] : "${i + 1}"));
+        listSecretKeyboard.add(SecretKeyboardData.numeric(
+            _randomizeKeys ? orderedKeys[i] : "${i + 1}"
+        ));
       }
 
-      // Dernière rangée : [FP/vide][9][0][DL]
-      // 1. Ajouter l'emplacement pour l'empreinte digitale ou un espace vide
+      // Dernière ligne : [FP/vide][9][0][DL]
       if (_fingerprintEnabled) {
-        listSecretKeyboard.add(SecretKeyboardData(key: SecretKeyboardConstants.FINGERPRINT_KEY));
+        listSecretKeyboard.add(SecretKeyboardData.fingerprint());
       } else {
-        listSecretKeyboard.add(SecretKeyboardData(key: SecretKeyboardConstants.EMPTY_KEY));
+        listSecretKeyboard.add(SecretKeyboardData.empty());
       }
 
-      // 2. Ajouter les deux derniers chiffres (9 et 0)
       if (_randomizeKeys) {
-        listSecretKeyboard.add(SecretKeyboardData(key: orderedKeys[8]));
-        listSecretKeyboard.add(SecretKeyboardData(key: orderedKeys[9]));
+        listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[8]));
+        listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[9]));
       } else {
-        listSecretKeyboard.add(SecretKeyboardData(key: "9"));
-        listSecretKeyboard.add(SecretKeyboardData(key: "0"));
+        listSecretKeyboard.add(SecretKeyboardData.numeric("9"));
+        listSecretKeyboard.add(SecretKeyboardData.numeric("0"));
       }
 
-      // 3. Ajouter le bouton de suppression
-      listSecretKeyboard.add(SecretKeyboardData(key: SecretKeyboardConstants.DELETE_KEY));
+      listSecretKeyboard.add(SecretKeyboardData.delete());
     }
 
     _secretKeyboardData = listSecretKeyboard;
     notifyListeners();
   }
+
+  /// Méthode de migration pour les configurations existantes
+  void migrateKeyConfiguration() {
+    _secretKeyboardData = _secretKeyboardData.map((data) {
+      if (KeyMigrationHelper.isLegacyKey(data.key)) {
+        return KeyMigrationHelper.migrateKeyData(data.key);
+      }
+      return data;
+    }).toList();
+
+    notifyListeners();
+  }
+
 
   /// Mélanger une liste de manière aléatoire
   List<String> _shuffle(List<String> items) {

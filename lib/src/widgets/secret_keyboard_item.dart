@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
+import 'package:flutter_secret_keyboard/src/models/secret_keyboard_data.dart';
 
-/// Widget représentant une touche du clavier secret
+/// Widget représentant une touche du clavier secret avec nomenclature améliorée
 class SecretKeyboardItem extends StatelessWidget {
   /// Données de la touche
   final SecretKeyboardData secretKeyboardData;
@@ -18,7 +18,6 @@ class SecretKeyboardItem extends StatelessWidget {
   /// Widget personnalisé pour le bouton d'empreinte digitale
   final Widget? fingerprintButtonWidget;
 
-  /// Constructeur avec paramètres personnalisables
   const SecretKeyboardItem({
     super.key,
     required this.secretKeyboardData,
@@ -46,37 +45,35 @@ class SecretKeyboardItem extends StatelessWidget {
 
   /// Construire le contenu de la touche selon son type
   Widget _buildKeyContent() {
-    // Touche numérique
-    if (secretKeyboardData.key != SecretKeyboardConstants.DELETE_KEY &&
-        secretKeyboardData.key != SecretKeyboardConstants.FINGERPRINT_KEY) {
-      return Text(
-        secretKeyboardData.key,
-        style: cellStyle ?? const TextStyle(
-          fontSize: 25,
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-        ),
-      );
-    }
-    // Touche d'empreinte digitale
-    else if (secretKeyboardData.key == SecretKeyboardConstants.FINGERPRINT_KEY) {
-      return fingerprintButtonWidget ?? Icon(
-        Icons.fingerprint,
-        size: 30,
-        color: cellStyle?.color ?? Colors.black,
-      );
-    }
-    // Touche de suppression
-    else if (secretKeyboardData.key == SecretKeyboardConstants.DELETE_KEY) {
-      return deleteButtonWidget ?? Icon(
-        Icons.backspace,
-        size: 30,
-        color: cellStyle?.color ?? Colors.black,
-      );
-    }
-    // Espace vide
-    else {
-      return SizedBox.shrink();
+    switch (secretKeyboardData.type) {
+      case KeyType.numeric:
+        return Text(
+          secretKeyboardData.key,
+          style: cellStyle,
+        );
+
+      case KeyType.fingerprint:
+        return fingerprintButtonWidget ?? Icon(
+          Icons.fingerprint,
+          size: 30,
+          color: cellStyle?.color ?? Colors.black,
+        );
+
+      case KeyType.delete:
+        return deleteButtonWidget ?? Icon(
+          Icons.backspace,
+          size: 30,
+          color: cellStyle?.color ?? Colors.black,
+        );
+
+      case KeyType.empty:
+        return const SizedBox.shrink();
+
+      case KeyType.custom:
+        return Text(
+          secretKeyboardData.displayLabel ?? secretKeyboardData.key,
+          style: cellStyle,
+        );
     }
   }
 }

@@ -2,61 +2,104 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
 
 class SecretKeyboardTheme {
-  /// Type d'effet tactile
+  // Propriétés essentielles
   final KeyTouchEffect touchEffect;
-
-  /// Couleur principale du thème
   final Color primaryColor;
-
-  /// Couleur secondaire du thème
-  final Color? secondaryColor;
-
-  /// Couleur de fond
   final Color backgroundColor;
-
-  /// Couleur du texte
   final Color textColor;
-
-  /// Style du texte
-  final TextStyle? textStyle;
-
-  /// Durée de l'animation
-  final Duration animationDuration;
-
-  /// Afficher les bordures/séparateurs entre les touches
   final bool showBorders;
-
-  /// Afficher une bordure externe autour du clavier entier
   final bool showOuterBorder;
 
-  /// Couleur des bordures (si showBorders ou showOuterBorder est true)
+  // Propriétés optionnelles pour certains thèmes spécifiques
+  final Color? secondaryColor;
+  final TextStyle? textStyle;
+  final Duration? animationDuration;
   final Color? borderColor;
+  final double? blurIntensity;
+  final Duration? blurDuration;
+  final bool? blurEnabled;
 
-  /// Intensité du flou (lorsque touchEffect est KeyTouchEffect.blur)
-  final double blurIntensity;
-
-  /// Durée de l'effet de flou
-  final Duration blurDuration;
-
-  /// Activation de l'effet de flou
-  final bool blurEnabled;
-
-  /// Constructeur de thème personnalisé
   const SecretKeyboardTheme({
     required this.touchEffect,
     required this.primaryColor,
-    this.secondaryColor,
     required this.backgroundColor,
     required this.textColor,
-    this.textStyle,
-    this.animationDuration = const Duration(milliseconds: 150),
     this.showBorders = false,
     this.showOuterBorder = false,
+    this.secondaryColor,
+    this.textStyle,
+    this.animationDuration,
     this.borderColor,
-    this.blurIntensity = BlurEffectConstants.DEFAULT_BLUR_INTENSITY,
-    this.blurDuration = BlurEffectConstants.DEFAULT_BLUR_DURATION,
-    this.blurEnabled = true,
+    this.blurIntensity,
+    this.blurDuration,
+    this.blurEnabled,
   });
+
+  /// Convertit ce thème en style complet
+  SecretKeyboardStyle toStyle() {
+    return SecretKeyboardStyle(
+      cellTextStyle: textStyle ?? TextStyle(
+        fontSize: 24,
+        color: textColor,
+        fontWeight: FontWeight.w500,
+      ),
+      deleteIconStyle: TextStyle(color: textColor, fontSize: 30),
+      fingerprintIconStyle: TextStyle(color: textColor, fontSize: 30),
+      backgroundColor: backgroundColor,
+      indicatorActiveColor: primaryColor,
+      indicatorInactiveColor: secondaryColor ?? textColor.withValues(alpha: 0.4),
+      indicatorBackgroundColor: backgroundColor,
+      touchEffect: touchEffect,
+      touchEffectColor: primaryColor,
+      touchEffectDuration: animationDuration ?? const Duration(milliseconds: 150),
+      touchEffectScaleValue: 0.95,
+      showBorders: showBorders,
+      showOuterBorder: showOuterBorder,
+      borderColor: borderColor ?? primaryColor.withValues(alpha: 0.3),
+      borderWidth: 1.0,
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
+      blurIntensity: blurIntensity ?? 3.0,
+      blurDuration: blurDuration ?? const Duration(milliseconds: 300),
+      blurEnabled: blurEnabled ?? true,
+      cellAspectRatio: 1.0,
+      horizontalPadding: 100,
+      indicatorSize: 20,
+      borderPadding: 1,
+    );
+  }
+
+  /// Méthode pour créer une copie modifiée
+  SecretKeyboardTheme copyWith({
+    KeyTouchEffect? touchEffect,
+    Color? primaryColor,
+    Color? backgroundColor,
+    Color? textColor,
+    bool? showBorders,
+    bool? showOuterBorder,
+    Color? secondaryColor,
+    TextStyle? textStyle,
+    Duration? animationDuration,
+    Color? borderColor,
+    double? blurIntensity,
+    Duration? blurDuration,
+    bool? blurEnabled,
+  }) {
+    return SecretKeyboardTheme(
+      touchEffect: touchEffect ?? this.touchEffect,
+      primaryColor: primaryColor ?? this.primaryColor,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      textColor: textColor ?? this.textColor,
+      showBorders: showBorders ?? this.showBorders,
+      showOuterBorder: showOuterBorder ?? this.showOuterBorder,
+      secondaryColor: secondaryColor ?? this.secondaryColor,
+      textStyle: textStyle ?? this.textStyle,
+      animationDuration: animationDuration ?? this.animationDuration,
+      borderColor: borderColor ?? this.borderColor,
+      blurIntensity: blurIntensity ?? this.blurIntensity,
+      blurDuration: blurDuration ?? this.blurDuration,
+      blurEnabled: blurEnabled ?? this.blurEnabled,
+    );
+  }
 
   /// Thème avec bordures internes seulement
   static const SecretKeyboardTheme gridLines = SecretKeyboardTheme(
@@ -72,7 +115,7 @@ class SecretKeyboardTheme {
     ),
     showBorders: true,
     showOuterBorder: false,
-    borderColor: Color(0x80CCCCCC), // Gris semi-transparent
+    borderColor: Color(0x80CCCCCC),
   );
 
   /// Thème avec bordures internes et externes
@@ -89,7 +132,7 @@ class SecretKeyboardTheme {
     ),
     showBorders: true,
     showOuterBorder: true,
-    borderColor: Color(0x80CCCCCC), // Gris semi-transparent
+    borderColor: Color(0x80CCCCCC),
   );
 
   /// Thème Material Design moderne - sans bordures
@@ -120,7 +163,7 @@ class SecretKeyboardTheme {
       letterSpacing: 0.2,
     ),
     showBorders: true,
-    borderColor: Color(0x80CCCCCC), // Gris semi-transparent
+    borderColor: Color(0x80CCCCCC),
   );
 
   /// Thème neumorphique - effet d'élévation subtil
@@ -148,7 +191,7 @@ class SecretKeyboardTheme {
       color: Colors.black87,
       fontWeight: FontWeight.w300,
       letterSpacing: -0.5,
-      fontFamily: '.SF Pro Text',  // Si disponible
+      fontFamily: '.SF Pro Text',
     ),
   );
 
@@ -166,7 +209,7 @@ class SecretKeyboardTheme {
       fontFamily: '.SF Pro Text',
     ),
     showBorders: true,
-    borderColor: Color(0x40007AFF), // Bleu iOS semi-transparent
+    borderColor: Color(0x40007AFF),
   );
 
   /// Thème sombre - pour les interfaces sombres
@@ -198,7 +241,7 @@ class SecretKeyboardTheme {
       letterSpacing: 0.15,
     ),
     showBorders: true,
-    borderColor: Color(0x400DFF9C), // Vert néon semi-transparent
+    borderColor: Color(0x400DFF9C),
   );
 
   /// Thème bancaire - look sécurisé et professionnel
