@@ -109,7 +109,9 @@ class _ThemeDemoPageState extends State<ThemeDemoPage> {
     {'name': 'Flou sombre', 'theme': SecretKeyboardTheme.blurredDark},
     {'name': 'Gélatineux moderne', 'theme': SecretKeyboardTheme.jellyModern},
     {'name': 'Gélatineux ludique', 'theme': SecretKeyboardTheme.jellyPlayful},
-    {'name': 'Gélatineux sombre', 'theme': SecretKeyboardTheme.jellyDark},
+    {'name': 'Particule festive', 'theme': SecretKeyboardTheme.particleFestive},
+    {'name': 'Onde aquatique', 'theme': SecretKeyboardTheme.waveAquatic},
+    {'name': 'Néon cyber', 'theme': SecretKeyboardTheme.neonCyber},
   ];
 
   // Thème sélectionné (par défaut: Material Design)

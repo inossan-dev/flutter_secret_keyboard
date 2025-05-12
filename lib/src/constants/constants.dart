@@ -126,7 +126,16 @@ enum KeyTouchEffect {
 
   /// Effet de flou temporaire
   blur,
-  
+
   /// Effet gélatineux avec déformation élastique
   jelly,
+
+  /// Effet de particules colorées
+  particle,
+
+  /// Effet d'onde concentrique
+  wave,
+
+  /// Effet néon lumineux
+  neon,
 }

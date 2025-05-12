@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secret_keyboard/src/models/secret_keyboard_data.dart';
 import 'package:flutter_secret_keyboard/src/constants/secret_keyboard_constants.dart';
+import 'package:flutter_secret_keyboard/src/models/secret_keyboard_data.dart';
 
 /// Utilitaire de migration pour faciliter la transition vers la nouvelle nomenclature
 class KeyMigrationHelper {

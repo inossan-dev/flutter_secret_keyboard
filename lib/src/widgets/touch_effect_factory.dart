@@ -4,8 +4,11 @@ import 'package:flutter_secret_keyboard/src/widgets/animations/blur_effect.dart'
 import 'package:flutter_secret_keyboard/src/widgets/animations/border_animation_effect.dart';
 import 'package:flutter_secret_keyboard/src/widgets/animations/color_change_effect.dart';
 import 'package:flutter_secret_keyboard/src/widgets/animations/elevation_effect.dart';
-import 'package:flutter_secret_keyboard/src/widgets/animations/scale_button_effect.dart';
 import 'package:flutter_secret_keyboard/src/widgets/animations/jelly_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/neon_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/particle_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/scale_button_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/animations/wave_effect.dart';
 
 /// Interface abstraite pour les créateurs d'effets tactiles
 abstract class TouchEffectBuilder {
@@ -164,6 +167,63 @@ class JellyTouchEffectBuilder implements TouchEffectBuilder {
   }
 }
 
+/// Créateur d'effet tactile Particle
+class ParticleTouchEffectBuilder implements TouchEffectBuilder {
+  @override
+  Widget build({
+    required Widget child,
+    required VoidCallback onTap,
+    required SecretKeyboardStyle style,
+  }) {
+    return ParticleEffect(
+      onTap: onTap,
+      duration: style.touchEffectDuration,
+      particleColor: style.touchEffectColor ?? style.indicatorActiveColor,
+      particleCount: 12,
+      particleSize: 3.0,
+      child: child,
+    );
+  }
+}
+
+/// Créateur d'effet tactile Wave
+class WaveTouchEffectBuilder implements TouchEffectBuilder {
+  @override
+  Widget build({
+    required Widget child,
+    required VoidCallback onTap,
+    required SecretKeyboardStyle style,
+  }) {
+    return WaveEffect(
+      onTap: onTap,
+      duration: style.touchEffectDuration,
+      waveColor: style.touchEffectColor ?? style.indicatorActiveColor,
+      waveCount: 3,
+      maxRadius: 40.0,
+      child: child,
+    );
+  }
+}
+
+/// Créateur d'effet tactile Neon
+class NeonTouchEffectBuilder implements TouchEffectBuilder {
+  @override
+  Widget build({
+    required Widget child,
+    required VoidCallback onTap,
+    required SecretKeyboardStyle style,
+  }) {
+    return NeonEffect(
+      onTap: onTap,
+      duration: style.touchEffectDuration,
+      neonColor: style.touchEffectColor ?? style.indicatorActiveColor,
+      glowIntensity: 20.0,
+      pulseIntensity: 1.2,
+      child: child,
+    );
+  }
+}
+
 /// Factory pour créer les builders d'effets tactiles
 class TouchEffectFactory {
   /// Registre des builders pour chaque type d'effet
@@ -176,6 +236,9 @@ class TouchEffectFactory {
     KeyTouchEffect.border: BorderTouchEffectBuilder(),
     KeyTouchEffect.blur: BlurTouchEffectBuilder(),
     KeyTouchEffect.jelly: JellyTouchEffectBuilder(),
+    KeyTouchEffect.particle: ParticleTouchEffectBuilder(),
+    KeyTouchEffect.wave: WaveTouchEffectBuilder(),
+    KeyTouchEffect.neon: NeonTouchEffectBuilder(),
   };
 
   /// Obtient le builder approprié pour un type d'effet donné

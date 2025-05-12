@@ -49,21 +49,21 @@ class SecretKeyboardItem extends StatelessWidget {
       case KeyType.numeric:
         return Text(
           secretKeyboardData.key,
-          style: cellStyle,
+          style: cellStyle ?? const TextStyle(fontSize: 24, color: Colors.white),
         );
 
       case KeyType.fingerprint:
         return fingerprintButtonWidget ?? Icon(
           Icons.fingerprint,
           size: 30,
-          color: cellStyle?.color ?? Colors.black,
+          color: cellStyle?.color ?? Colors.white,
         );
 
       case KeyType.delete:
         return deleteButtonWidget ?? Icon(
           Icons.backspace,
           size: 30,
-          color: cellStyle?.color ?? Colors.black,
+          color: cellStyle?.color ?? Colors.white,
         );
 
       case KeyType.empty:
@@ -72,7 +72,7 @@ class SecretKeyboardItem extends StatelessWidget {
       case KeyType.custom:
         return Text(
           secretKeyboardData.displayLabel ?? secretKeyboardData.key,
-          style: cellStyle,
+          style: cellStyle ?? const TextStyle(fontSize: 24, color: Colors.white),
         );
     }
   }

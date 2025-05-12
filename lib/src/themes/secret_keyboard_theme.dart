@@ -337,4 +337,62 @@ class SecretKeyboardTheme {
     animationDuration: Duration(milliseconds: 380),
   );
 
+  /// Thème avec effet de particules - style festif
+  static const SecretKeyboardTheme particleFestive = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.particle,
+    primaryColor: Color(0xFFFF6B6B),
+    backgroundColor: Colors.white,
+    textColor: Color(0xFF2E2E2E),
+    textStyle: TextStyle(
+      fontSize: 26,
+      color: Color(0xFF2E2E2E),
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.2,
+    ),
+    animationDuration: Duration(milliseconds: 800),
+  );
+
+  /// Thème avec effet d'onde - style aquatique
+  static const SecretKeyboardTheme waveAquatic = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.wave,
+    primaryColor: Color(0xFF00B4D8),
+    backgroundColor: Color(0xFFF0F9FF),
+    textColor: Color(0xFF0A3449),
+    textStyle: TextStyle(
+      fontSize: 24,
+      color: Color(0xFF0A3449),
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.15,
+    ),
+    animationDuration: Duration(milliseconds: 600),
+  );
+
+  /// Thème avec effet néon - style cyberpunk
+  static const SecretKeyboardTheme neonCyber = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.neon,
+    primaryColor: Color(0xFF00FFFF),
+    backgroundColor: Color(0xFF0A0A0A),  // Fond sombre mais pas noir complet
+    secondaryColor: Color(0xFF1A1A1A),
+    textColor: Color(0xFFFFFFFF),  // Texte blanc pour meilleur contraste
+    textStyle: TextStyle(
+      fontSize: 26,
+      color: Color(0xFFFFFFFF),  // Blanc pour visibilité optimale
+      fontWeight: FontWeight.w500,  // Plus épais pour mieux voir
+      letterSpacing: 0.3,
+      fontFamily: 'monospace',  // Police monospace pour style tech
+      shadows: [
+        Shadow(
+          blurRadius: 10,
+          color: Color(0xFF00FFFF),  // Lueur cyan autour du texte
+          offset: Offset(0, 0),
+        ),
+        Shadow(
+          blurRadius: 20,
+          color: Color(0x8000FFFF),  // Halo plus large
+          offset: Offset(0, 0),
+        ),
+      ],
+    ),
+    animationDuration: Duration(milliseconds: 400),
+  );
 }
