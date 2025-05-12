@@ -290,4 +290,51 @@ class SecretKeyboardTheme {
     blurIntensity: 5.0,
     blurDuration: Duration(milliseconds: 400),
   );
+
+  /// Thème avec effet gélatineux - style moderne ludique
+  static const SecretKeyboardTheme jellyModern = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.jelly,
+    primaryColor: Color(0xFF6366F1),
+    backgroundColor: Colors.white,
+    textColor: Color(0xFF1F2937),
+    textStyle: TextStyle(
+      fontSize: 26,
+      color: Color(0xFF1F2937),
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.15,
+    ),
+    animationDuration: Duration(milliseconds: 400),
+  );
+
+  /// Thème avec effet gélatineux - style coloré et fun
+  static const SecretKeyboardTheme jellyPlayful = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.jelly,
+    primaryColor: Color(0xFFEC4899),
+    backgroundColor: Color(0xFFFDF2F8),
+    textColor: Color(0xFF831843),
+    textStyle: TextStyle(
+      fontSize: 28,
+      color: Color(0xFF831843),
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.2,
+    ),
+    animationDuration: Duration(milliseconds: 450),
+  );
+
+  /// Thème avec effet gélatineux - style sombre
+  static const SecretKeyboardTheme jellyDark = SecretKeyboardTheme(
+    touchEffect: KeyTouchEffect.jelly,
+    primaryColor: Color(0xFF00D9FF),
+    backgroundColor: Color(0xFF1E293B),
+    secondaryColor: Color(0xFF334155),
+    textColor: Color(0xFFF8FAFC),
+    textStyle: TextStyle(
+      fontSize: 26,
+      color: Color(0xFFF8FAFC),
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0.1,
+    ),
+    animationDuration: Duration(milliseconds: 380),
+  );
+
 }

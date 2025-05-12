@@ -107,6 +107,9 @@ class _ThemeDemoPageState extends State<ThemeDemoPage> {
     {'name': 'Grille complète', 'theme': SecretKeyboardTheme.fullGrid},
     {'name': 'Flou moderne', 'theme': SecretKeyboardTheme.blurredModern},
     {'name': 'Flou sombre', 'theme': SecretKeyboardTheme.blurredDark},
+    {'name': 'Gélatineux moderne', 'theme': SecretKeyboardTheme.jellyModern},
+    {'name': 'Gélatineux ludique', 'theme': SecretKeyboardTheme.jellyPlayful},
+    {'name': 'Gélatineux sombre', 'theme': SecretKeyboardTheme.jellyDark},
   ];
 
   // Thème sélectionné (par défaut: Material Design)
@@ -239,6 +242,7 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
     {'name': 'Effet d\'élévation', 'effect': KeyTouchEffect.elevation},
     {'name': 'Effet de bordure', 'effect': KeyTouchEffect.border},
     {'name': 'Flou', 'effect': KeyTouchEffect.blur},
+    {'name': 'Effet gélatineux', 'effect': KeyTouchEffect.jelly},
   ];
 
   // Effet sélectionné (par défaut: aucun)
@@ -310,11 +314,17 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
           const SizedBox(height: 16),
 
           // Paramètres spécifiques selon l'effet sélectionné
-          if (_selectedEffectIndex == 2) // Effet d'échelle
+          if (_selectedEffectIndex == 2 || _selectedEffectIndex == 7) // Effet d'échelle et effet gélatineux
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Valeur d\'échelle:'),
+                Text(
+                  _selectedEffectIndex == 7
+                      ? '(Pour l\'effet gélatineux, cela contrôle l\'intensité de la déformation)'
+                      : '',
+                  style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                ),
                 Slider(
                   value: _scaleValue,
                   min: 0.8,
@@ -338,8 +348,8 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
                 Slider(
                   value: _animationDurationMs.toDouble(),
                   min: 50,
-                  max: 300,
-                  divisions: 25,
+                  max: 500,
+                  divisions: 45,
                   label: _animationDurationMs.toString(),
                   onChanged: (value) {
                     setState(() {
