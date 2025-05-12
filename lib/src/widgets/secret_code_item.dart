@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secret_keyboard/src/models/secret_code_data.dart';
+import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
 
 /// Widget représentant un indicateur individuel du code secret
 class SecretCodeItem extends StatelessWidget {
@@ -25,11 +25,11 @@ class SecretCodeItem extends StatelessWidget {
   const SecretCodeItem({
     super.key,
     required this.secretCodeData,
-    this.secretCodeSize = 20,
-    this.secretCodeBorderPadding = 1,
-    this.activeColor = Colors.orange,
-    this.inactiveColor = Colors.black,
-    this.backgroundColor = Colors.white,
+    this.secretCodeSize = DefaultValues.indicatorSize,
+    this.secretCodeBorderPadding = DefaultValues.borderWidth,
+    this.activeColor = DefaultValues.indicatorActiveColor,
+    this.inactiveColor = DefaultValues.indicatorInactiveColor,
+    this.backgroundColor = DefaultValues.backgroundColor,
   });
 
   @override

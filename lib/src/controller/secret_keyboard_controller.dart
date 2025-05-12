@@ -2,12 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
-import 'package:flutter_secret_keyboard/src/constants/secret_keyboard_constants.dart';
-import 'package:flutter_secret_keyboard/src/models/secret_keyboard_data.dart';
-import 'package:flutter_secret_keyboard/src/utils/key_migration_helper.dart';
 import 'package:flutter_secret_keyboard/src/utils/validation_utils.dart';
 
-/// Contrôleur qui gère l'état et la logique du clavier secret
+/// Contrôleur amélioré qui gère l'état complet du clavier secret
 class SecretKeyboardController with ChangeNotifier {
   /// Fonction d'authentification actuelle
   final AuthenticationFunction _authenticationFunction;
@@ -20,6 +17,9 @@ class SecretKeyboardController with ChangeNotifier {
 
   /// Nombre de colonnes du clavier (3 ou 4)
   final int _gridColumns;
+
+  /// Indique si le code est complété
+  bool _isCompleted = false;
 
   /// Constructeur du contrôleur
   SecretKeyboardController({
@@ -44,6 +44,9 @@ class SecretKeyboardController with ChangeNotifier {
 
   /// Obtenir le nombre de colonnes
   int get gridColumns => _gridColumns;
+
+  /// Obtenir l'état de completion
+  bool get isCompleted => _isCompleted;
 
   /// Liste des données du code secret (les indicateurs de saisie)
   List<SecretCodeData> _secretCodeDatas = [];
@@ -76,6 +79,7 @@ class SecretKeyboardController with ChangeNotifier {
     if (_secretCode != validatedCode) {
       _secretCode = validatedCode;
       updateSecretCode(validatedCode);
+      _updateCompletionStatus();
       notifyListeners();
     }
   }
@@ -97,6 +101,7 @@ class SecretKeyboardController with ChangeNotifier {
 
     updateSecretCode('');
     _secretCode = initCode;
+    _isCompleted = false;
     notifyListeners();
   }
 
@@ -129,18 +134,31 @@ class SecretKeyboardController with ChangeNotifier {
       if (_secretCode.isNotEmpty) {
         _secretCode = _secretCode.substring(0, _secretCode.length - 1);
         _secretCodeDatas = _secretCodeStateUpdate();
+        _isCompleted = false; // Réinitialiser l'état de completion
         notifyListeners();
       }
     } else if (normalizedKey != SecretKeyboardConstants.FINGERPRINT_KEY &&
-        normalizedKey != SecretKeyboardConstants.EMPTY_KEY) {
+        normalizedKey != SecretKeyboardConstants.EMPTY_KEY &&
+        !_isCompleted) { // Vérifier si le code n'est pas déjà complété
       if (_secretCode.length < _maxLength) {
         _secretCode += normalizedKey;
         _secretCodeDatas = _secretCodeStateUpdate();
+        _updateCompletionStatus();
         notifyListeners();
       }
     }
 
     return _secretCode;
+  }
+
+  /// Mettre à jour l'état de completion
+  void _updateCompletionStatus() {
+    bool wasCompleted = _isCompleted;
+    _isCompleted = _secretCode.length == _maxLength;
+
+    if (_isCompleted != wasCompleted) {
+      notifyListeners();
+    }
   }
 
   /// Former le code secret en ajoutant un caractère
@@ -158,80 +176,75 @@ class SecretKeyboardController with ChangeNotifier {
 
   /// Initialiser le clavier avec les nouvelles structures de données
   void initSecretKeyboard() {
-    List<String> keys = List.generate(10, (i) => "$i");
-    List<String> orderedKeys;
-
-    if (_randomizeKeys) {
-      orderedKeys = _shuffle(keys);
-    } else {
-      orderedKeys = [];
-      if (_gridColumns == 3) {
-        for (int i = 1; i <= 9; i++) {
-          orderedKeys.add("$i");
-        }
-      } else {
-        for (int i = 1; i <= 8; i++) {
-          orderedKeys.add("$i");
-        }
-      }
-    }
+    List<String> keys = List<String>.generate(10, (i) => "$i");
+    List<String> orderedKeys = _randomizeKeys ? _shuffle(keys) : [];
 
     List<SecretKeyboardData> listSecretKeyboard = [];
 
-    if (_gridColumns == 3) {
-      // Configuration 3 colonnes
-      if (_randomizeKeys) {
-        for (int i = 0; i < 9; i++) {
-          listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[i]));
-        }
-      } else {
-        for (int i = 0; i < 9; i++) {
-          listSecretKeyboard.add(SecretKeyboardData.numeric("${i + 1}"));
-        }
-      }
+    // Configuration selon le nombre de colonnes
+    KeyboardConfiguration config = _getKeyboardConfiguration();
 
-      // Dernière ligne : [FP/vide][0][DL]
-      if (_fingerprintEnabled) {
-        listSecretKeyboard.add(SecretKeyboardData.fingerprint());
-      } else {
-        listSecretKeyboard.add(SecretKeyboardData.empty());
-      }
+    // Ajouter les touches numériques principales
+    listSecretKeyboard.addAll(_generateNumericKeys(orderedKeys, config));
 
-      if (_randomizeKeys) {
-        listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[9]));
-      } else {
-        listSecretKeyboard.add(SecretKeyboardData.numeric("0"));
-      }
-
-      listSecretKeyboard.add(SecretKeyboardData.delete());
-    } else {
-      // Configuration 4 colonnes
-      for (int i = 0; i < 8; i++) {
-        listSecretKeyboard.add(SecretKeyboardData.numeric(
-            _randomizeKeys ? orderedKeys[i] : "${i + 1}"
-        ));
-      }
-
-      // Dernière ligne : [FP/vide][9][0][DL]
-      if (_fingerprintEnabled) {
-        listSecretKeyboard.add(SecretKeyboardData.fingerprint());
-      } else {
-        listSecretKeyboard.add(SecretKeyboardData.empty());
-      }
-
-      if (_randomizeKeys) {
-        listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[8]));
-        listSecretKeyboard.add(SecretKeyboardData.numeric(orderedKeys[9]));
-      } else {
-        listSecretKeyboard.add(SecretKeyboardData.numeric("9"));
-        listSecretKeyboard.add(SecretKeyboardData.numeric("0"));
-      }
-
-      listSecretKeyboard.add(SecretKeyboardData.delete());
+    // Ajouter les touches spéciales dans l'ordre défini
+    for (var specialKey in config.specialKeysOrder) {
+      listSecretKeyboard.add(_createSpecialKey(specialKey, orderedKeys));
     }
 
     _secretKeyboardData = listSecretKeyboard;
     notifyListeners();
+  }
+
+  /// Génère les touches numériques selon la configuration
+  List<SecretKeyboardData> _generateNumericKeys(
+      List<String> orderedKeys,
+      KeyboardConfiguration config,
+      ) {
+    List<SecretKeyboardData> numericKeys = [];
+
+    for (int i = 0; i < config.numericKeysCount; i++) {
+      String keyValue = _randomizeKeys
+          ? orderedKeys[i]
+          : config.getNumericKeyValue(i);
+
+      numericKeys.add(SecretKeyboardData.numeric(keyValue));
+    }
+
+    return numericKeys;
+  }
+
+  /// Crée une touche spéciale selon son type
+  SecretKeyboardData _createSpecialKey(
+      SpecialKeyType type,
+      List<String> orderedKeys,
+      ) {
+    switch (type) {
+      case SpecialKeyType.fingerprint:
+        return _fingerprintEnabled
+            ? SecretKeyboardData.fingerprint()
+            : SecretKeyboardData.empty();
+
+      case SpecialKeyType.lastNumeric:
+        String keyValue = _randomizeKeys
+            ? orderedKeys[_gridColumns == 3 ? 9 : 8]
+            : (_gridColumns == 3 ? "0" : "9");
+        return SecretKeyboardData.numeric(keyValue);
+
+      case SpecialKeyType.zeroKey:
+        String keyValue = _randomizeKeys ? orderedKeys[9] : "0";
+        return SecretKeyboardData.numeric(keyValue);
+
+      case SpecialKeyType.delete:
+        return SecretKeyboardData.delete();
+    }
+  }
+
+  /// Retourne la configuration appropriée selon le nombre de colonnes
+  KeyboardConfiguration _getKeyboardConfiguration() {
+    return _gridColumns == 3
+        ? KeyboardConfiguration.threeColumns()
+        : KeyboardConfiguration.fourColumns();
   }
 
   /// Méthode de migration pour les configurations existantes
@@ -249,19 +262,18 @@ class SecretKeyboardController with ChangeNotifier {
 
   /// Mélanger une liste de manière aléatoire
   List<String> _shuffle(List<String> items) {
+    // Créer une copie pour éviter de modifier la liste originale
+    List<String> shuffled = List<String>.from(items);
     var random = Random();
 
-    // Parcourir tous les éléments
-    for (var i = items.length - 1; i > 0; i--) {
-      // Choisir un nombre pseudoaléatoire selon la longueur de la liste
+    for (var i = shuffled.length - 1; i > 0; i--) {
       var n = random.nextInt(i + 1);
-
-      var temp = items[i];
-      items[i] = items[n];
-      items[n] = temp;
+      var temp = shuffled[i];
+      shuffled[i] = shuffled[n];
+      shuffled[n] = temp;
     }
 
-    return items;
+    return shuffled;
   }
 
   /// Libérer les ressources lors de la destruction
@@ -270,6 +282,7 @@ class SecretKeyboardController with ChangeNotifier {
     _secretCode = '';
     _secretCodeDatas.clear();
     _secretKeyboardData.clear();
+    _isCompleted = false;
     super.dispose();
   }
 }

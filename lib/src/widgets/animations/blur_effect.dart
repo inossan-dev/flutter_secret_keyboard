@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
 
 class BlurKeyEffect extends StatefulWidget {
   final Widget child;
@@ -13,9 +14,9 @@ class BlurKeyEffect extends StatefulWidget {
     super.key,
     required this.child,
     required this.onTap,
-    this.maxBlurIntensity = 3.0,
-    this.blurDuration = const Duration(milliseconds: 300),
-    this.enabled = true,
+    this.maxBlurIntensity = DefaultValues.blurIntensity,
+    this.blurDuration = DefaultValues.blurDuration,
+    this.enabled = DefaultValues.blurEnabled,
   });
 
   @override

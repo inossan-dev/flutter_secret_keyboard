@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secret_keyboard/flutter_secret_keyboard.dart';
-import 'package:flutter_secret_keyboard/src/constants/secret_keyboard_constants.dart';
-import 'package:flutter_secret_keyboard/src/utils/validation_utils.dart';
-import 'package:flutter_secret_keyboard/src/widgets/animations/blur_effect.dart';
-import 'package:flutter_secret_keyboard/src/widgets/animations/border_animation_effect.dart';
-import 'package:flutter_secret_keyboard/src/widgets/animations/color_change_effect.dart';
-import 'package:flutter_secret_keyboard/src/widgets/animations/elevation_effect.dart';
-import 'package:flutter_secret_keyboard/src/widgets/animations/scale_button_effect.dart';
+import 'package:flutter_secret_keyboard/src/widgets/touch_effect_factory.dart';
 
 import 'secret_keyboard_item.dart';
 
-/// Widget principal du clavier secret
+/// Widget principal du clavier secret refactorisé
 class SecretKeyboard extends StatefulWidget {
   /// Contrôleur du clavier secret
   final SecretKeyboardController controller;
@@ -40,9 +34,6 @@ class SecretKeyboard extends StatefulWidget {
   /// Largeur du clavier
   final double? width;
 
-  /// Longueur du code
-  final int codeLength;
-
   /// Widget personnalisé pour le bouton de suppression
   final Widget? deleteButtonWidget;
 
@@ -61,9 +52,6 @@ class SecretKeyboard extends StatefulWidget {
   /// Liste de formateurs d'entrée pour le TextField lié
   final List<TextInputFormatter>? inputFormatters;
 
-  /// Nombre de colonnes dans la grille du clavier (3 ou 4)
-  final int gridColumns;
-
   final KeyTouchEffect? touchEffect;
   final bool? showBorders;
 
@@ -79,33 +67,30 @@ class SecretKeyboard extends StatefulWidget {
   @Deprecated('Utilisez le paramètre style à la place')
   final TextStyle? cellTextStyle;
 
-  SecretKeyboard({
+  const SecretKeyboard({
     super.key,
     required this.controller,
     required this.onClick,
-    this.showSecretCode = true,
-    this.showGrid = true,
+    this.showSecretCode = DefaultValues.showSecretCode,
+    this.showGrid = DefaultValues.showGrid,
     this.onCodeCompleted,
     this.onFingerprintClick,
     this.onCanCleanMessage,
     this.height,
     this.width,
-    int codeLength = 4,
     this.deleteButtonWidget,
     this.fingerprintButtonWidget,
     this.textController,
-    this.obscureText = true,
-    this.obscuringCharacter = '•',
+    this.obscureText = DefaultValues.obscureText,
+    this.obscuringCharacter = DefaultValues.obscuringCharacter,
     this.inputFormatters,
-    int gridColumns = 4,
     this.style,
     this.theme,
     this.backgroundColor,
     this.cellTextStyle,
     this.touchEffect,
     this.showBorders,
-  }) : gridColumns = ValidationUtils.validateGridColumns(gridColumns),
-        codeLength = ValidationUtils.validateMaxLength(codeLength);
+  });
 
   /// Obtient le style final avec une hiérarchie claire
   /// Priorité : Personnalisations directes > Style > Thème > Défaut
@@ -139,20 +124,52 @@ class SecretKeyboard extends StatefulWidget {
 }
 
 class _SecretKeyboardState extends State<SecretKeyboard> {
-  bool _isCompleted = false;
-  late int _gridViewCrossAxisCount;
   SecretKeyboardTextFieldBinding? _textFieldBinding;
 
   @override
   void initState() {
     super.initState();
-    _isCompleted = false;
-    _gridViewCrossAxisCount = widget.gridColumns;
 
-    if (widget.textController != null) {
-      _textFieldBinding = SecretKeyboardTextFieldBinding(
+    // Utilisation du builder pour créer la liaison
+    _textFieldBinding = TextFieldBindingBuilder.build(
+      keyboardController: widget.controller,
+      textController: widget.textController,
+      obscureText: widget.obscureText,
+      obscuringCharacter: widget.obscuringCharacter,
+      inputFormatters: widget.inputFormatters,
+    );
+
+    // S'abonner aux changements d'état
+    widget.controller.addListener(_handleStateChange);
+  }
+
+  @override
+  void didUpdateWidget(SecretKeyboard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Gérer les changements de controller
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller.removeListener(_handleStateChange);
+      widget.controller.addListener(_handleStateChange);
+    }
+
+    // Utilisation du builder pour vérifier si une mise à jour est nécessaire
+    if (TextFieldBindingBuilder.hasConfigurationChanged(
+      oldTextController: oldWidget.textController,
+      newTextController: widget.textController,
+      oldObscureText: oldWidget.obscureText,
+      newObscureText: widget.obscureText,
+      oldObscuringCharacter: oldWidget.obscuringCharacter,
+      newObscuringCharacter: widget.obscuringCharacter,
+      oldInputFormatters: oldWidget.inputFormatters,
+      newInputFormatters: widget.inputFormatters,
+    )) {
+      // Disposition de l'ancienne liaison et création d'une nouvelle
+      _textFieldBinding?.dispose();
+
+      _textFieldBinding = TextFieldBindingBuilder.build(
         keyboardController: widget.controller,
-        textEditingController: widget.textController!,
+        textController: widget.textController,
         obscureText: widget.obscureText,
         obscuringCharacter: widget.obscuringCharacter,
         inputFormatters: widget.inputFormatters,
@@ -161,80 +178,46 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
   }
 
   @override
-  void didUpdateWidget(SecretKeyboard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _isCompleted = false;
-
-    if (widget.gridColumns != oldWidget.gridColumns) {
-      _gridViewCrossAxisCount = widget.gridColumns;
-    }
-
-    if (widget.textController != oldWidget.textController ||
-        widget.obscureText != oldWidget.obscureText ||
-        widget.obscuringCharacter != oldWidget.obscuringCharacter ||
-        widget.inputFormatters != oldWidget.inputFormatters) {
-      _textFieldBinding?.dispose();
-
-      if (widget.textController != null) {
-        _textFieldBinding = SecretKeyboardTextFieldBinding(
-          keyboardController: widget.controller,
-          textEditingController: widget.textController!,
-          obscureText: widget.obscureText,
-          obscuringCharacter: widget.obscuringCharacter,
-          inputFormatters: widget.inputFormatters,
-        );
-      } else {
-        _textFieldBinding = null;
-      }
-    }
-  }
-
-  @override
   void dispose() {
+    widget.controller.removeListener(_handleStateChange);
     _textFieldBinding?.dispose();
     super.dispose();
   }
 
+  /// Gérer les changements d'état du controller
+  void _handleStateChange() {
+    // L'état est maintenant géré par le controller
+    // Cette méthode peut être utilisée pour des mises à jour spécifiques du widget si nécessaire
+  }
+
   void resetKeyboard() {
-    if (mounted) {
-      setState(() {
-        _isCompleted = false;
-      });
-      widget.controller.resetSecretCode();
-    }
+    widget.controller.resetSecretCode();
   }
 
   void handleKeyPress(String keyValue) {
     final normalizedKey = SecretKeyboardConstants.convertLegacyKey(keyValue);
 
-    if (_isCompleted && normalizedKey != SecretKeyboardConstants.DELETE_KEY) {
-      return;
-    }
-
+    // Le controller gère maintenant la logique de completion
     String newCode = widget.controller.formSecretCode(keyValue);
 
-    setState(() {
-      widget.onClick(newCode);
+    widget.onClick(newCode);
 
-      if (!_isCompleted &&
-          widget.onCodeCompleted != null &&
-          newCode.isNotEmpty &&
-          newCode.length == widget.codeLength) {
-        _isCompleted = true;
-        widget.onCodeCompleted!(newCode);
-      } else if (normalizedKey == SecretKeyboardConstants.DELETE_KEY) {
-        _isCompleted = false;
-      }
+    // Vérifier l'état de completion depuis le controller
+    if (!widget.controller.isCompleted &&
+        widget.onCodeCompleted != null &&
+        newCode.isNotEmpty &&
+        newCode.length == widget.controller.maxLength) {
+      widget.onCodeCompleted!(newCode);
+    }
 
-      if (widget.onFingerprintClick != null &&
-          normalizedKey == SecretKeyboardConstants.FINGERPRINT_KEY) {
-        widget.onFingerprintClick!(newCode);
-      }
+    if (widget.onFingerprintClick != null &&
+        normalizedKey == SecretKeyboardConstants.FINGERPRINT_KEY) {
+      widget.onFingerprintClick!(newCode);
+    }
 
-      if (widget.onCanCleanMessage != null && newCode.length == 1) {
-        widget.onCanCleanMessage!(true);
-      }
-    });
+    if (widget.onCanCleanMessage != null && newCode.length == 1) {
+      widget.onCanCleanMessage!(true);
+    }
   }
 
   BoxDecoration _createBoxDecoration(int index) {
@@ -257,8 +240,8 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
     final borderColor = style.borderColor ??
         style.indicatorActiveColor.withValues(alpha: 0.3);
 
-    final bool isLastRow = index >= widget.controller.secretKeyboardData.length - _gridViewCrossAxisCount;
-    final bool isLastColumn = (index + 1) % _gridViewCrossAxisCount == 0;
+    final bool isLastRow = index >= widget.controller.secretKeyboardData.length - widget.controller.gridColumns;
+    final bool isLastColumn = (index + 1) % widget.controller.gridColumns == 0;
 
     return BoxDecoration(
       color: style.backgroundColor,
@@ -272,6 +255,20 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
           width: style.borderWidth,
         ),
       ),
+    );
+  }
+
+  /// Crée un widget avec l'effet tactile approprié
+  Widget _buildKeyWithTouchEffect({
+    required Widget keyContainer,
+    required VoidCallback onTap,
+    required SecretKeyboardStyle style,
+  }) {
+    return TouchEffectFactory.createTouchEffectWidget(
+      effect: style.touchEffect,
+      child: keyContainer,
+      onTap: onTap,
+      style: style,
     );
   }
 
@@ -321,7 +318,7 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisSpacing: style.showBorders ? 0 : 8,
                       mainAxisSpacing: style.showBorders ? 0 : 8,
-                      crossAxisCount: _gridViewCrossAxisCount,
+                      crossAxisCount: widget.controller.gridColumns,
                       childAspectRatio: style.cellAspectRatio,
                     ),
                     itemCount: widget.controller.secretKeyboardData.length,
@@ -343,79 +340,17 @@ class _SecretKeyboardState extends State<SecretKeyboard> {
                         ),
                       );
 
-                      onTap() {
+                      void onTap() {
                         String keyValue = widget.controller.secretKeyboardData[index].key;
                         handleKeyPress(keyValue);
                       }
 
-                      switch (style.touchEffect) {
-                        case KeyTouchEffect.none:
-                          return GestureDetector(
-                            onTap: onTap,
-                            child: keyContainer,
-                          );
-
-                        case KeyTouchEffect.ripple:
-                          return InkWell(
-                            onTap: onTap,
-                            splashColor: style.touchEffectColor?.withValues(alpha: 0.3) ??
-                                style.indicatorActiveColor.withValues(alpha: 0.3),
-                            highlightColor: style.touchEffectColor?.withValues(alpha: 0.1) ??
-                                style.indicatorActiveColor.withValues(alpha: 0.1),
-                            borderRadius: style.borderRadius,
-                            child: keyContainer,
-                          );
-
-                        case KeyTouchEffect.scale:
-                          return ScaleButtonEffect(
-                            onTap: onTap,
-                            duration: style.touchEffectDuration,
-                            scaleValue: style.touchEffectScaleValue,
-                            child: keyContainer,
-                          );
-
-                        case KeyTouchEffect.color:
-                          return ColorChangeEffect(
-                            onTap: onTap,
-                            normalColor: style.backgroundColor,
-                            pressedColor: style.touchEffectColor?.withValues(alpha: 0.3) ??
-                                Colors.grey.shade300,
-                            duration: style.touchEffectDuration,
-                            borderRadius: style.borderRadius,
-                            child: keyContainer,
-                          );
-
-                        case KeyTouchEffect.elevation:
-                          return Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: ElevationEffect(
-                              onTap: onTap,
-                              backgroundColor: style.backgroundColor,
-                              duration: style.touchEffectDuration,
-                              borderRadius: style.borderRadius,
-                              child: keyContainer,
-                            ),
-                          );
-
-                        case KeyTouchEffect.border:
-                          return BorderAnimationEffect(
-                            onTap: onTap,
-                            backgroundColor: style.backgroundColor,
-                            borderColor: style.touchEffectColor ?? style.indicatorActiveColor,
-                            duration: style.touchEffectDuration,
-                            borderRadius: style.borderRadius,
-                            child: keyContainer,
-                          );
-
-                        case KeyTouchEffect.blur:
-                          return BlurKeyEffect(
-                            onTap: onTap,
-                            maxBlurIntensity: style.blurIntensity,
-                            blurDuration: style.blurDuration,
-                            enabled: style.blurEnabled,
-                            child: keyContainer,
-                          );
-                      }
+                      // Utilisation de la factory pour créer le widget avec effet tactile
+                      return _buildKeyWithTouchEffect(
+                        keyContainer: keyContainer,
+                        onTap: onTap,
+                        style: style,
+                      );
                     },
                   ),
                 ),

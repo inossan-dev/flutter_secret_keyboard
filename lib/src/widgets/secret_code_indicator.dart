@@ -29,12 +29,12 @@ class SecretCodeIndicator extends StatelessWidget {
   const SecretCodeIndicator({
     super.key,
     required this.controller,
-    this.horizontalPadding = 100,
-    this.indicatorSize = 20,
-    this.borderPadding = 1,
-    this.activeColor = Colors.orange,
-    this.inactiveColor = Colors.black,
-    this.backgroundColor = Colors.white,
+    this.horizontalPadding = DefaultValues.horizontalPadding,
+    this.indicatorSize = DefaultValues.indicatorSize,
+    this.borderPadding = DefaultValues.borderPadding,
+    this.activeColor = DefaultValues.indicatorActiveColor,
+    this.inactiveColor = DefaultValues.indicatorInactiveColor,
+    this.backgroundColor = DefaultValues.backgroundColor,
   });
 
   @override

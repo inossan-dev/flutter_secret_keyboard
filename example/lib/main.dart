@@ -195,8 +195,6 @@ class _ThemeDemoPageState extends State<ThemeDemoPage> {
             controller: _keyboardController,
             textController: _textController,
             theme: _themes[_selectedThemeIndex]['theme'],
-            codeLength: 6,
-            gridColumns: 3,
             onClick: (value) {
               // Action sur clic
             },
@@ -433,7 +431,6 @@ class _EffectsDemoPageState extends State<EffectsDemoPage> {
           SecretKeyboard(
             controller: _keyboardController,
             textController: _textController,
-            codeLength: 4,
             showGrid: false,
             style: SecretKeyboardStyle(
               touchEffect: _effects[_selectedEffectIndex]['effect'],
@@ -588,7 +585,6 @@ class _FormatterDemoPageState extends State<FormatterDemoPage> {
           SecretKeyboard(
             controller: _pinKeyboardController,
             textController: _pinController,
-            codeLength: 4,
             theme: SecretKeyboardTheme.material,
             style: const SecretKeyboardStyle(
               cellAspectRatio: 1.5,
@@ -641,7 +637,6 @@ class _FormatterDemoPageState extends State<FormatterDemoPage> {
           SecretKeyboard(
             controller: _refKeyboardController,
             textController: _refController,
-            codeLength: 7,  // 6 chiffres + 1 tiret
             theme: SecretKeyboardTheme.iOS,
             style: const SecretKeyboardStyle(
               cellAspectRatio: 1.5,
@@ -693,7 +688,6 @@ class _FormatterDemoPageState extends State<FormatterDemoPage> {
           SecretKeyboard(
             controller: _noZeroKeyboardController,
             textController: _noZeroController,
-            codeLength: 5,
             theme: SecretKeyboardTheme.banking,
             style: const SecretKeyboardStyle(
               cellAspectRatio: 1.5,
@@ -887,8 +881,6 @@ class _ColumnsDemoPageState extends State<ColumnsDemoPage> {
           SecretKeyboard(
             controller: _3colKeyboardController,
             textController: _3colController,
-            codeLength: 4,
-            gridColumns: 3,
             showGrid: _showGrid,
             style: SecretKeyboardStyle(
               cellAspectRatio: 1.25,
@@ -941,8 +933,6 @@ class _ColumnsDemoPageState extends State<ColumnsDemoPage> {
           SecretKeyboard(
             controller: _4colKeyboardController,
             textController: _4colController,
-            codeLength: 4,
-            gridColumns: 4,
             showGrid: _showGrid,
             style: SecretKeyboardStyle(
               cellAspectRatio: 1.25,
