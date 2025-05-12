@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 1.5.0 (12 mai 2025)
+
+### Ajouts
+
+- Trois nouveaux effets tactiles pour enrichir l'expérience utilisateur :
+  - Effet de particules : explosion colorée au toucher avec animation de gravité
+  - Effet d'onde : cercles concentriques se propageant depuis la touche
+  - Effet néon : halo lumineux multicouche avec pulsations caractéristiques
+- Extension de l'énumération KeyTouchEffect avec particle, wave et neon
+- Nouveaux thèmes prédéfinis utilisant les effets :
+  - Thème "Particules festives" (particleFestive)
+  - Thème "Onde aquatique" (waveAquatic)
+  - Thème "Néon cyber" (neonCyber)
+
+### Améliorations
+
+- Optimisation de l'effet néon : meilleur contraste, bordures lumineuses visibles
+- Préservation de la zone cliquable complète pour tous les nouveaux effets
+- Architecture améliorée garantissant la réactivité tactile avec animations actives
+- Performance optimisée pour maintenir 60 FPS avec effets complexes
+
 ## 1.4.0 (02 mai 2025)
 
 ### Ajouts

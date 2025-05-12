@@ -24,7 +24,7 @@ Ajoutez `flutter_secret_keyboard` à votre fichier pubspec.yaml :
 
 ```yaml
 dependencies:
-  flutter_secret_keyboard: ^1.4.0
+  flutter_secret_keyboard: ^1.5.0
 ```
 
 ### Configuration requise
